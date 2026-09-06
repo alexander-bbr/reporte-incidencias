@@ -1,0 +1,13 @@
+# TODO
+
+## General
+
+  - 
+
+## Usuarios
+
+  - Pulir los archivos, y pasarselos a la IA para que sepa como estoy trabajando y pueda hacer los otros módulos
+
+## Sign In
+
+  - No funciona la contraseña cuando la creo desde gestión de usuarios

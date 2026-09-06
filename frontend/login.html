@@ -3,58 +3,57 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Iniciar Sesión - Reporte de Incidencias</title>
+    <link rel="stylesheet" href="assets/css/global.css" />
+    <link rel="stylesheet" href="assets/css/fonts.css" />
     <link rel="stylesheet" href="assets/css/login.css" />
+    <link
+      rel="shortcut icon"
+      href="/reporte-incidencias/public/favicon.ico"
+      type="image/x-icon"
+    />
+
+    <title>Iniciar Sesión</title>
   </head>
   <body>
-    <div class="login-container">
-      <div class="login-box">
-        <div class="login-header">
-          <div class="logo">
-            <span class="icon">🏥</span>
-            <h1>Clínica UGA</h1>
-          </div>
-          <h2>Sistema de Reporte de Incidencias</h2>
-          <p>Ingresa tus credenciales para acceder</p>
+    <div class="login">
+      <header class="login-header">
+        <div class="logo">
+          <img class="icon" src="assets/images/favicon.png" alt="Logo del sistema">
+          <h1>Clínica UGA</h1>
+        </div>
+        <h2>Sistema de Reporte de Incidencias</h2>
+      </header>
+
+      <form id="loginForm" onsubmit="return iniciarSesion(event);">
+        <div class="form-group">
+          <label for="cedula">Cédula</label>
+          <input type="text" id="cedula" required autofocus />
         </div>
 
-        <form id="loginForm" onsubmit="return iniciarSesion(event);">
-          <div class="form-group">
-            <label for="cedula">📋 Cédula</label>
-            <input
-              type="text"
-              id="cedula"
-              placeholder="Ingresa tu cédula"
-              required
-              autofocus
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="contrasena">🔒 Contraseña</label>
-            <input
-              type="password"
-              id="contrasena"
-              placeholder="Ingresa tu contraseña"
-              required
-            />
-          </div>
-
-          <div
-            id="mensaje-error"
-            class="error-message"
-            style="display: none"
-          ></div>
-
-          <button type="submit" class="btn-login" id="btnLogin">
-            Iniciar Sesión
-          </button>
-        </form>
-
-        <div class="login-footer">
-          <p>¿Olvidaste tu contraseña? Contacta al administrador</p>
+        <div class="form-group">
+          <label for="contrasena">Contraseña</label>
+          <input
+            type="password"
+            id="contrasena"
+            placeholder="Ingresa tu contraseña"
+            required
+          />
         </div>
-      </div>
+
+        <div
+          id="mensaje-error"
+          class="error-message"
+          style="display: none"
+        ></div>
+
+        <button type="submit" class="btn-login" id="btnLogin">
+          Iniciar Sesión
+        </button>
+      </form>
+
+      <footer class="login-footer">
+        <p>¿Olvidaste tu contraseña? Contacta al Administrador</p>
+      <footer/>
     </div>
 
     <script src="assets/js/api.js"></script>

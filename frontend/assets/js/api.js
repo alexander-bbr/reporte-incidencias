@@ -1,7 +1,4 @@
-/**
- * API base para llamar al backend
- */
-
+// API base para llamar al backend
 const API_BASE = "/reporte-incidencias/backend/api/";
 
 /**
@@ -37,16 +34,12 @@ function llamarAPI(endpoint, options = {}) {
     });
 }
 
-/**
- * Realiza una petición GET
- */
+// Realizar una petición GET
 function getAPI(endpoint) {
   return llamarAPI(endpoint, { method: "GET" });
 }
 
-/**
- * Realiza una petición POST
- */
+// Realiza una petición POST
 function postAPI(endpoint, data) {
   return llamarAPI(endpoint, {
     method: "POST",
@@ -54,9 +47,7 @@ function postAPI(endpoint, data) {
   });
 }
 
-/**
- * Realiza una petición PUT
- */
+// Realiza una petición PUT
 function putAPI(endpoint, data) {
   return llamarAPI(endpoint, {
     method: "PUT",
@@ -64,9 +55,7 @@ function putAPI(endpoint, data) {
   });
 }
 
-/**
- * Realiza una petición DELETE
- */
+// Realiza una petición DELETE
 function deleteAPI(endpoint) {
   return llamarAPI(endpoint, { method: "DELETE" });
 }

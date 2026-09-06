@@ -1,0 +1,200 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.page-header h2 {
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* Botones */
+.add-register,
+.edit-button,
+.delete-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+
+  transition: all 0.3s ease;
+}
+
+/* Botón de Agregar Registro */
+.add-register {
+  background-color: var(--blue-color);
+  color: white;
+}
+.add-register:hover {
+  box-shadow: 0 5px 20px rgba(15, 50, 166, 0.4);
+}
+
+/* Botón de Editar Registro */
+.edit-button {
+  background: #08ab85;
+  color: white;
+}
+.edit-button:hover {
+  background: #069170;
+}
+
+/* Botón de Eliminar Registro */
+.delete-button {
+  background: #dc3545;
+  color: white;
+}
+.delete-button:hover {
+  background: #c82333;
+}
+
+/* Tablas */
+.table-responsive {
+  overflow-x: auto;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: center;
+}
+
+.table thead {
+  background: #f8f9fa;
+}
+
+.table thead th {
+  font-weight: 600;
+  padding: 12px 15px;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e9ecef;
+  color: #333;
+}
+
+.table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.table .text-center {
+  text-align: center;
+}
+
+.table .text-danger {
+  color: #dc3545;
+}
+
+/* Badges para roles */
+.badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.badge-sistemas {
+  background: #d4edda;
+  color: #155724;
+}
+
+.badge-coordinadora {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.badge-admisionista {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge-default {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+/* Badges para tipos de equipos */
+.badge-computadora {
+  background: #efefdfae;
+  color: #b6aa06;
+}
+.badge-impresora {
+  background: #cce5ff;
+  color: #004085;
+}
+.badge-telefono {
+  background: #fff3cd;
+  color: #856404;
+}
+.badge-otro {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+/* Badges para estados de equipos */
+.badge-operativo {
+  background: #d4edda;
+  color: #155724;
+}
+.badge-mantenimiento {
+  background: #fff3cd;
+  color: #856404;
+}
+.badge-inoperativo {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody td {
+    display: block;
+    padding: 10px 15px;
+    border-bottom: none;
+    position: relative;
+    padding-left: 40%;
+  }
+
+  .table tbody td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 15px;
+    width: 35%;
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .table tbody td:last-child {
+    border-bottom: 1px solid #dee2e6;
+  }
+}

@@ -3,34 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reporte de Incidencias - Clínica UGA</title>
-    <link rel="stylesheet" href="frontend/assets/css/style.css" />
+    <link rel="stylesheet" href="frontend/assets/css/global.css" />
+    <link rel="stylesheet" href="frontend/assets/css/fonts.css" />
+    <link
+      rel="shortcut icon"
+      href="/reporte-incidencias/public/favicon.ico"
+      type="image/x-icon"
+    />
+
+    <title>Reporte de Incidencias</title>
   </head>
   <body>
     <!-- Barra de navegación -->
     <nav class="navbar">
       <div class="nav-container">
         <div class="nav-brand">
-          <h2>🏥 Clínica UGA</h2>
-          <span class="subtitle">Reporte de Incidencias</span>
+          <h1>Reporte de Incidencias</h1>
         </div>
+
         <ul class="nav-menu">
           <li><a href="index.html" class="active">Inicio</a></li>
           <li>
-            <a href="frontend/modulos/reportes/index.html">📋 Reportes</a>
+            <a href="frontend/modulos/reportes/index.html">Reportes</a>
           </li>
-          <li><a href="frontend/modulos/equipos/index.html">🖥️ Equipos</a></li>
-          <li><a href="frontend/modulos/fallas/index.html">⚠️ Fallas</a></li>
+          <li><a href="frontend/modulos/equipos/index.html">Equipos</a></li>
+          <li><a href="frontend/modulos/fallas/index.html">Fallas</a></li>
           <li>
             <a href="frontend/modulos/observaciones/index.html"
-              >💬 Observaciones</a
+              >Observaciones</a
             >
           </li>
           <li>
-            <a href="frontend/modulos/usuarios/index.html">👤 Usuarios</a>
+            <a href="frontend/modulos/usuarios/index.html">Usuarios</a>
           </li>
-          <li><a href="#" onclick="cerrarSesion()">🚪 Cerrar Sesión</a></li>
+          <li><a href="#" onclick="cerrarSesion()">Cerrar Sesión</a></li>
         </ul>
+
+        <!-- Información del Usuario -->
         <div class="user-info" id="userInfo">
           <span id="nombreUsuario">Cargando...</span>
           <span class="badge" id="rolUsuario">ROL</span>
@@ -41,8 +50,8 @@
     <!-- Contenido principal -->
     <div class="container">
       <div class="welcome-section">
-        <h1>Bienvenido al Sistema de Reportes</h1>
-        <p id="mensajeBienvenida">Selecciona un módulo para comenzar</p>
+        <h2>Sistema web para el Reporte de Incidencias</h2>
+        <p id="mensajeBienvenida"></p>
       </div>
 
       <!-- Tarjetas de acceso rápido -->
@@ -101,14 +110,6 @@
           <h3>Usuarios</h3>
           <p>Gestión de usuarios del sistema</p>
           <span class="badge-count" id="totalUsuarios">0</span>
-        </div>
-      </div>
-
-      <!-- Actividad reciente -->
-      <div class="recent-activity">
-        <h3>📋 Actividad Reciente</h3>
-        <div id="ultimosReportes">
-          <p class="text-muted">Cargando actividad...</p>
         </div>
       </div>
     </div>

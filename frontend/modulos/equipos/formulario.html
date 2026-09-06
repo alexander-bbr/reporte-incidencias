@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../assets/css/global.css" />
+    <link rel="stylesheet" href="../../assets/css/fonts.css" />
+    <link rel="stylesheet" href="../../assets/css/formulario.css" />
+    <link
+      rel="shortcut icon"
+      href="/reporte-incidencias/public/favicon.ico"
+      type="image/x-icon"
+    />
+    <title>Formulario Equipo</title>
+  </head>
+  <body>
+    <!-- Barra de navegación -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <h1>Reporte de Incidencias</h1>
+        </div>
+        <ul class="nav-menu">
+          <li><a href="../../../index.html">Inicio</a></li>
+          <li><a href="../reportes/index.html">Reportes</a></li>
+          <li><a href="index.html" class="active">Equipos</a></li>
+          <li><a href="../fallas/index.html">Fallas</a></li>
+          <li><a href="../observaciones/index.html">Observaciones</a></li>
+          <li><a href="../usuarios/index.html">Usuarios</a></li>
+          <li><a href="#" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+        </ul>
+        <div class="user-info" id="userInfo">
+          <span id="nombreUsuario">Cargando...</span>
+          <span class="badge" id="rolUsuario">ROL</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container">
+      <form
+        class="form"
+        id="equipoForm"
+        onsubmit="return guardarEquipo(event);"
+      >
+        <header class="form-header">
+          <h2 id="formTitle">Agregar Equipo</h2>
+        </header>
+
+        <input type="hidden" id="modo" value="crear" />
+        <input type="hidden" id="idOriginal" value="" />
+
+        <!-- Nombre -->
+        <div class="form-group">
+          <label for="nombre"
+            >Nombre<span class="require-symbol">*</span></label
+          >
+          <input type="text" id="nombre" required autofocus />
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group">
+          <label for="descripcion">Descripción (Opcional)</label>
+          <textarea id="descripcion" rows="5"></textarea>
+        </div>
+
+        <!-- Tipo -->
+        <div class="form-group">
+          <label for="tipo">Tipo<span class="require-symbol">*</span></label>
+          <select id="tipo" required>
+            <option value="">...</option>
+            <option value="COMPUTADORA">Computadora</option>
+            <option value="IMPRESORA">Impresora</option>
+            <option value="TELEFONO">Teléfono</option>
+            <option value="OTRO">Otro</option>
+          </select>
+        </div>
+
+        <!-- Estado -->
+        <div class="form-group">
+          <label for="estado"
+            >Estado<span class="require-symbol">*</span></label
+          >
+          <select id="estado" required>
+            <option value="">...</option>
+            <option value="OPERATIVO">Operativo</option>
+            <option value="MANTENIMIENTO">En Mantenimiento</option>
+            <option value="INOPERATIVO">Inoperativo</option>
+          </select>
+        </div>
+
+        <!-- Información del autor (solo lectura) -->
+        <div class="form-group">
+          <label>Registrado por</label>
+          <div class="info-box" id="infoAutor">
+            <span id="nombreAutor">Cargando...</span>
+          </div>
+          <small class="form-text">El equipo se registrará a tu nombre</small>
+        </div>
+
+        <!-- Botones -->
+        <div class="buttons-wrapper">
+          <button type="submit" class="save-button" id="btnGuardar">
+            Guardar
+          </button>
+          <a href="index.html" class="cancel-button">Cancelar</a>
+        </div>
+
+        <div id="mensaje" class="message" style="display: none"></div>
+      </form>
+    </div>
+
+    <script src="../../assets/js/api.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/modulos/equipos.js"></script>
+  </body>
+</html>

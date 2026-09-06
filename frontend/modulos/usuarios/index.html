@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../assets/css/global.css" />
+    <link rel="stylesheet" href="../../assets/css/fonts.css" />
+    <link rel="stylesheet" href="../../assets/css/modulo.css" />
+
+    <link
+      rel="shortcut icon"
+      href="/reporte-incidencias/public/favicon.ico"
+      type="image/x-icon"
+    />
+    <title>Usuarios</title>
+  </head>
+  <body>
+    <!-- Barra de navegación -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <h1>Reporte de Incidencias</h1>
+        </div>
+
+        <ul class="nav-menu">
+          <li><a href="../../../index.html">Inicio</a></li>
+          <li><a href="../reportes/index.html">Reportes</a></li>
+          <li><a href="../equipos/index.html">Equipos</a></li>
+          <li><a href="../fallas/index.html">Fallas</a></li>
+          <li><a href="../observaciones/index.html">Observaciones</a></li>
+          <li><a href="index.html" class="active">Usuarios</a></li>
+          <li><a href="#" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+        </ul>
+
+        <!-- Información del Usuario -->
+        <div class="user-info" id="userInfo">
+          <span id="nombreUsuario">Cargando...</span>
+          <span class="badge" id="rolUsuario">ROL</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container">
+      <div class="page-header">
+        <h2>Gestión de Usuarios</h2>
+        <button
+          onclick="window.location.href = 'formulario.html'"
+          class="add-register"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="feather feather-plus"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Agregar Usuario
+        </button>
+      </div>
+
+      <!-- Tabla de usuarios -->
+      <div class="table-responsive">
+        <table class="table" id="tablaUsuarios">
+          <thead>
+            <tr>
+              <th>Cédula</th>
+              <th>Nombre Completo</th>
+              <th>Teléfono</th>
+              <th>Rol</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyUsuarios">
+            <tr>
+              <td colspan="5" class="text-center">Cargando usuarios...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script src="../../assets/js/api.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/modulos/usuarios.js"></script>
+  </body>
+</html>

@@ -6,6 +6,50 @@
 const SESSION_KEY = "usuario_incidencias";
 
 /**
+ * Prepara el header y la navegación lateral compartida.
+ */
+document.addEventListener("DOMContentLoaded", function () {
+  const navbar = document.querySelector(".navbar");
+  const navBrand = document.querySelector(".nav-brand");
+
+  if (!navbar || !navBrand) {
+    return;
+  }
+
+  const header = document.createElement("header");
+  header.className = "site-header";
+  header.appendChild(navBrand.querySelector("h1"));
+  document.body.prepend(header);
+
+  const toggle = document.createElement("button");
+  toggle.className = "menu-toggle";
+  toggle.type = "button";
+  toggle.setAttribute("aria-label", "Abrir navegación");
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.textContent = "☰";
+  document.body.appendChild(toggle);
+
+  toggle.addEventListener("click", function () {
+    const isOpen = navbar.classList.toggle("is-open");
+    toggle.setAttribute("aria-expanded", String(isOpen));
+    toggle.setAttribute(
+      "aria-label",
+      isOpen ? "Cerrar navegación" : "Abrir navegación",
+    );
+    toggle.textContent = isOpen ? "×" : "☰";
+  });
+
+  navbar.querySelectorAll(".nav-menu a").forEach((link) => {
+    link.addEventListener("click", function () {
+      navbar.classList.remove("is-open");
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-label", "Abrir navegación");
+      toggle.textContent = "☰";
+    });
+  });
+});
+
+/**
  * Inicia sesión del usuario
  */
 function iniciarSesion(event) {
@@ -23,7 +67,7 @@ function iniciarSesion(event) {
   }
 
   // Deshabilitar botón y mostrar carga
-  btn.textContent = "⏳ Iniciando sesión...";
+  btn.textContent = "Iniciando sesión...";
   btn.disabled = true;
   ocultarError();
 
@@ -114,7 +158,7 @@ function obtenerUsuarioLogueado() {
  * Cierra la sesión del usuario
  */
 function cerrarSesion() {
-  if (!confirm("¿Estás seguro de cerrar sesión?")) {
+  if (!confirm("¿Estás seguro de que quieres Cerrar la Sesión?")) {
     return;
   }
 

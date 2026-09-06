@@ -6,7 +6,7 @@ reporte-incidencias/
 │   │
 │   ├── assets/
 │   │   ├── css/
-│   │   │   ├── style.css       # Estilos globales
+│   │   │   ├── general.css       # Estilos globales
 │   │   │   └── login.css       # Estilos del login
 │   │   ├── fonts/              
 │   │   ├── images/             

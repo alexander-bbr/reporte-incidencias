@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../assets/css/global.css" />
+    <link rel="stylesheet" href="../../assets/css/fonts.css" />
+    <link rel="stylesheet" href="../../assets/css/formulario.css" />
+    <link
+      rel="shortcut icon"
+      href="/reporte-incidencias/public/favicon.ico"
+      type="image/x-icon"
+    />
+    <title>Formulario Falla</title>
+  </head>
+  <body>
+    <!-- Barra de navegación -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <h1>Reporte de Incidencias</h1>
+        </div>
+        <ul class="nav-menu">
+          <li><a href="../../../index.html">Inicio</a></li>
+          <li><a href="../reportes/index.html">Reportes</a></li>
+          <li><a href="../equipos/index.html">Equipos</a></li>
+          <li><a href="index.html" class="active">Fallas</a></li>
+          <li><a href="../observaciones/index.html">Observaciones</a></li>
+          <li><a href="../usuarios/index.html">Usuarios</a></li>
+          <li><a href="#" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+        </ul>
+        <div class="user-info" id="userInfo">
+          <span id="nombreUsuario">Cargando...</span>
+          <span class="badge" id="rolUsuario">ROL</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container">
+      <form class="form" id="fallaForm" onsubmit="return guardarFalla(event);">
+        <header class="form-header">
+          <h2 id="formTitle">Agregar Falla</h2>
+        </header>
+
+        <input type="hidden" id="modo" value="crear" />
+        <input type="hidden" id="idOriginal" value="" />
+
+        <!-- Título -->
+        <div class="form-group">
+          <label for="titulo"
+            >Título<span class="require-symbol">*</span></label
+          >
+          <input type="text" id="titulo" required autofocus />
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group">
+          <label for="descripcion"
+            >Descripción<span class="require-symbol">*</span></label
+          >
+          <textarea
+            id="descripcion"
+            rows="5"
+            placeholder="Describe la falla en detalle"
+            required
+          ></textarea>
+        </div>
+
+        <!-- Botones -->
+        <div class="buttons-wrapper">
+          <button type="submit" class="save-button" id="btnGuardar">
+            Guardar
+          </button>
+          <a href="index.html" class="cancel-button">Cancelar</a>
+        </div>
+
+        <div id="mensaje" class="message" style="display: none"></div>
+      </form>
+    </div>
+
+    <script src="../../assets/js/api.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/modulos/fallas.js"></script>
+  </body>
+</html>
