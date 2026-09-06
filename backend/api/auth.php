@@ -1,5 +1,4 @@
 <?php
-// Forzar que siempre devuelva JSON
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -8,47 +7,57 @@ header('Access-Control-Allow-Headers: Content-Type');
 // Manejar solicitudes OPTIONS (preflight)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
-    echo json_encode(['success' => true]);
     exit;
 }
 
-// Incluir archivos de configuración
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../db/conexion.php';
-
-// FUNCIÓN SIMPLIFICADA para respuestas JSON
-function respuestaJSON($success, $mensaje, $data = null) {
-    $response = ['success' => $success, 'mensaje' => $mensaje];
-    if ($data !== null) {
-        $response = array_merge($response, $data);
-    }
-    echo json_encode($response);
-    exit;
-}
+require_once __DIR__ . '/../includes/funciones.php';
 
 // Obtener la acción
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 
-// Login SIMPLIFICADO
-if ($action === 'login') {
+switch ($action) {
+    case 'login':
+        login();
+        break;
+        
+    case 'logout':
+        logout();
+        break;
+        
+    case 'verificar':
+        verificar();
+        break;
+        
+    default:
+        respuestaJSON(false, 'Acción no válida');
+}
+
+/**
+ * Inicia sesión de usuario
+ */
+function login() {
     // Obtener datos del POST
     $data = json_decode(file_get_contents('php://input'), true);
     
+    // Validar que lleguen los datos
     if (!$data || !isset($data['cedula']) || !isset($data['contrasena'])) {
-        respuestaJSON(false, 'Faltan datos');
+        respuestaJSON(false, 'Faltan datos: cédula y contraseña son requeridos');
     }
     
-    $cedula = $data['cedula'];
+    $cedula = sanitizar($data['cedula']);
     $contrasena = $data['contrasena'];
+    
+    // Validar que no estén vacíos
+    if (empty($cedula) || empty($contrasena)) {
+        respuestaJSON(false, 'La cédula y la contraseña son obligatorias');
+    }
     
     // Conectar a la base de datos
     $conn = conectarDB();
     
-    if (!$conn) {
-        respuestaJSON(false, 'Error de conexión a BD');
-    }
-    
-    // Buscar usuario
+    // Buscar usuario por cédula
     $sql = "SELECT cedula_usuario, contrasena, nombre, apellido, telefono, rol 
             FROM usuario 
             WHERE cedula_usuario = ?";
@@ -71,25 +80,49 @@ if ($action === 'login') {
         respuestaJSON(false, 'Contraseña incorrecta');
     }
     
+    // Eliminar contraseña de los datos que se guardarán en sesión
     unset($usuario['contrasena']);
+    
+    // Guardar usuario en sesión
     $_SESSION['usuario'] = $usuario;
+    
     cerrarDB($conn);
     
-    respuestaJSON(true, 'Login exitoso', ['usuario' => $usuario]);
-    
-} elseif ($action === 'logout') {
+    respuestaJSON(true, 'Inicio de sesión exitoso', [
+        'usuario' => $usuario
+    ]);
+}
+
+/**
+ * Cierra la sesión del usuario
+ */
+function logout() {
+    // Destruir la sesión
     $_SESSION = array();
-    session_destroy();
-    respuestaJSON(true, 'Sesión cerrada');
     
-} elseif ($action === 'verificar') {
-    if (isset($_SESSION['usuario'])) {
-        respuestaJSON(true, 'Usuario autenticado', ['usuario' => $_SESSION['usuario']]);
+    if (ini_get("session.use_cookies")) {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $params["path"], $params["domain"],
+            $params["secure"], $params["httponly"]
+        );
+    }
+    
+    session_destroy();
+    
+    respuestaJSON(true, 'Sesión cerrada correctamente');
+}
+
+/**
+ * Verifica si el usuario está autenticado
+ */
+function verificar() {
+    if (estaAutenticado()) {
+        respuestaJSON(true, 'Usuario autenticado', [
+            'usuario' => $_SESSION['usuario']
+        ]);
     } else {
         respuestaJSON(false, 'No autenticado');
     }
-    
-} else {
-    respuestaJSON(false, 'Acción no válida');
 }
 ?>

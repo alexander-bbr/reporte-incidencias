@@ -27,17 +27,12 @@ function iniciarSesion(event) {
   btn.disabled = true;
   ocultarError();
 
-  console.log("Enviando login para:", cedula);
-  console.log("Contraseña:", contrasena);
-
   // Llamar al backend
   postAPI("auth.php?action=login", {
     cedula: cedula,
     contrasena: contrasena,
   })
     .then((data) => {
-      console.log("Respuesta del servidor:", data);
-
       if (data.success) {
         // Guardar usuario en localStorage
         localStorage.setItem(SESSION_KEY, JSON.stringify(data.usuario));
@@ -49,7 +44,7 @@ function iniciarSesion(event) {
       }
     })
     .catch((error) => {
-      console.error("Error en login:", error);
+      console.error("Error:", error);
       mostrarError("Error al conectar con el servidor");
     })
     .finally(() => {
