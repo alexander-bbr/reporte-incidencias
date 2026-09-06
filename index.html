@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reporte de Incidencias - Clínica UGA</title>
+    <link rel="stylesheet" href="frontend/assets/css/style.css" />
+  </head>
+  <body>
+    <!-- Barra de navegación -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <h2>🏥 Clínica UGA</h2>
+          <span class="subtitle">Reporte de Incidencias</span>
+        </div>
+        <ul class="nav-menu">
+          <li><a href="index.html" class="active">Inicio</a></li>
+          <li>
+            <a href="frontend/modulos/reportes/index.html">📋 Reportes</a>
+          </li>
+          <li><a href="frontend/modulos/equipos/index.html">🖥️ Equipos</a></li>
+          <li><a href="frontend/modulos/fallas/index.html">⚠️ Fallas</a></li>
+          <li>
+            <a href="frontend/modulos/observaciones/index.html"
+              >💬 Observaciones</a
+            >
+          </li>
+          <li>
+            <a href="frontend/modulos/usuarios/index.html">👤 Usuarios</a>
+          </li>
+          <li><a href="#" onclick="cerrarSesion()">🚪 Cerrar Sesión</a></li>
+        </ul>
+        <div class="user-info" id="userInfo">
+          <span id="nombreUsuario">Cargando...</span>
+          <span class="badge" id="rolUsuario">ROL</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container">
+      <div class="welcome-section">
+        <h1>Bienvenido al Sistema de Reportes</h1>
+        <p id="mensajeBienvenida">Selecciona un módulo para comenzar</p>
+      </div>
+
+      <!-- Tarjetas de acceso rápido -->
+      <div class="modules-grid">
+        <div
+          class="module-card"
+          onclick="
+            window.location.href = 'frontend/modulos/reportes/index.html'
+          "
+        >
+          <div class="module-icon">📋</div>
+          <h3>Reportes</h3>
+          <p>Gestiona los reportes de incidencias</p>
+          <span class="badge-count" id="totalReportes">0</span>
+        </div>
+
+        <div
+          class="module-card"
+          onclick="window.location.href = 'frontend/modulos/equipos/index.html'"
+        >
+          <div class="module-icon">🖥️</div>
+          <h3>Equipos</h3>
+          <p>Administra los equipos de la clínica</p>
+          <span class="badge-count" id="totalEquipos">0</span>
+        </div>
+
+        <div
+          class="module-card"
+          onclick="window.location.href = 'frontend/modulos/fallas/index.html'"
+        >
+          <div class="module-icon">⚠️</div>
+          <h3>Fallas</h3>
+          <p>Catálogo de fallas comunes</p>
+          <span class="badge-count" id="totalFallas">0</span>
+        </div>
+
+        <div
+          class="module-card"
+          onclick="
+            window.location.href = 'frontend/modulos/observaciones/index.html'
+          "
+        >
+          <div class="module-icon">💬</div>
+          <h3>Observaciones</h3>
+          <p>Registro de observaciones generales</p>
+          <span class="badge-count" id="totalObservaciones">0</span>
+        </div>
+
+        <div
+          class="module-card"
+          onclick="
+            window.location.href = 'frontend/modulos/usuarios/index.html'
+          "
+        >
+          <div class="module-icon">👤</div>
+          <h3>Usuarios</h3>
+          <p>Gestión de usuarios del sistema</p>
+          <span class="badge-count" id="totalUsuarios">0</span>
+        </div>
+      </div>
+
+      <!-- Actividad reciente -->
+      <div class="recent-activity">
+        <h3>📋 Actividad Reciente</h3>
+        <div id="ultimosReportes">
+          <p class="text-muted">Cargando actividad...</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="frontend/assets/js/api.js"></script>
+    <script src="frontend/assets/js/auth.js"></script>
+    <script src="frontend/assets/js/main.js"></script>
+  </body>
+</html>

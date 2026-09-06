@@ -1,0 +1,85 @@
+## Requisitos técnicos
+
+  - 5 tablas en la BBDD.
+  - 3 roles
+  - 4 módulos en la aplicación.
+
+
+---
+
+
+## Tablas
+
+  ### Tablas Principales
+
+    - usuario
+    - reporte
+    - equipo
+    - fallas
+    - observaciones
+  
+  ### Tablas intermedias
+
+    - reporte_falla
+    - reporte_equipo
+
+  ### Relaciones
+
+    - usuario -> reporte (1:N)
+    - usuario -> equipo (1:N)
+    - usuario -> observacion (1:N)
+    - reporte -> equipo (n:m)
+    - reporte -> falla (n:m)
+
+---
+
+
+##  Roles
+
+  1. Sistemas
+
+    - Reportes
+      - No puede Agregar, Editar ni Eliminar.
+      - Solo puede trabajar con Etiqueta de la Incidencia
+    
+    - Equipos
+      - Puede Agregar, Editar y Eliminar
+    
+    - Fallas
+      - Puede Agregar, Editar y Eliminar
+
+  2. Coordinadora
+
+    - Reportes (TODO)
+    - Equipos (TODO)
+    - Usuarios (TODO)
+  
+  3. Admisionista
+
+    - Reportes (TODO)
+    - Equipos (TODO)
+
+
+---
+
+
+## Módulos
+
+  - Reportes
+    - Agregar Incidencia
+    - Editar Incidencia
+    - Eliminar Incidencia
+    - Etiqueta de la Incidencia
+
+  - Equipos
+    - Agregar
+    - Editar
+    - Eliminar
+
+  - Usuarios
+    - Agregar
+    - Editar
+    - Eliminar
+
+  - Sign In
+    - Solo Iniciar Sesión, es la Coordinadora la que registra los usuarios

@@ -1,0 +1,60 @@
+reporte-incidencias/
+│
+├── index.html                   # Página principal (Redirige al login si no hay sesión)
+│
+├── frontend/
+│   │
+│   ├── assets/
+│   │   ├── css/
+│   │   │   ├── style.css       # Estilos globales
+│   │   │   └── login.css       # Estilos del login
+│   │   ├── fonts/              
+│   │   ├── images/             
+│   │   └── js/
+│   │       ├── main.js         # Funciones globales
+│   │       ├── auth.js         # Autenticación (login, logout)
+│   │       ├── api.js          # Funciones para llamar al backend
+│   │       └── modulos/        # JS específico por módulo
+│   │           ├── usuarios.js
+│   │           ├── reportes.js
+│   │           ├── equipos.js
+│   │           ├── fallas.js
+│   │           └── observaciones.js
+│   │
+│   └── modulos/                # Vistas HTML (páginas)
+│       ├── usuarios/
+│       │   ├── index.html      # Lista de usuarios + Botón Agregar
+│       │   └── formulario.html # Crear/Editar usuario
+│       ├── reportes/
+│       │   ├── index.html      # Lista de reportes + Botón Agregar
+│       │   └── formulario.html # Crear/Editar reporte
+│       ├── equipos/
+│       │   ├── index.html      # Lista de equipos + Botón Agregar
+│       │   └── formulario.html # Crear/Editar equipo
+│       ├── fallas/
+│       │   ├── index.html      # Lista de fallas + Botón Agregar
+│       │   └── formulario.html # Crear/Editar falla
+│       └── observaciones/
+│           ├── index.html      # Lista de observaciones + Botón Agregar
+│           └── formulario.html # Crear/Editar observación
+│
+├── backend/                     
+│   ├── api/                    
+│   │   ├── auth.php            # Login, logout, verificar sesión
+│   │   ├── usuarios.php        # CRUD usuarios
+│   │   ├── reportes.php        # CRUD reportes
+│   │   ├── equipos.php         # CRUD equipos
+│   │   ├── fallas.php          # CRUD fallas
+│   │   └── observaciones.php   # CRUD observaciones
+│   │
+│   ├── db/
+│   │   ├── schema.sql          
+│   │   └── conexion.php        
+│   │
+│   ├── includes/
+│   │   ├── funciones.php       
+│   │   └── validaciones.php    
+│   │
+│   └── config.php              
+│
+└── .htaccess            # Este no lo quiero, no creo que sea necesario       
