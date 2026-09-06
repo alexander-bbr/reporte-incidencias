@@ -1,13 +1,3 @@
-## Requisitos técnicos
-
-  - 5 tablas en la BBDD.
-  - 3 roles
-  - 4 módulos en la aplicación.
-
-
----
-
-
 ## Tablas
 
   ### Tablas Principales
@@ -34,18 +24,21 @@
 ---
 
 
-##  Roles
+##  Roles y Sus Permisos
 
   1. Sistemas
 
     - Reportes
       - No puede Agregar, Editar ni Eliminar.
-      - Solo puede trabajar con Etiqueta de la Incidencia
+      - Solo puede Editar la Etiqueta de la Incidencia
     
     - Equipos
       - Puede Agregar, Editar y Eliminar
     
     - Fallas
+      - Puede Agregar, Editar y Eliminar
+    
+    - Observaciones
       - Puede Agregar, Editar y Eliminar
 
   2. Coordinadora
@@ -53,11 +46,13 @@
     - Reportes (TODO)
     - Equipos (TODO)
     - Usuarios (TODO)
+    - Observaciones (TODO)
   
   3. Admisionista
 
     - Reportes (TODO)
     - Equipos (TODO)
+    - Observaciones (TODO)
 
 
 ---
@@ -77,6 +72,16 @@
     - Eliminar
 
   - Usuarios
+    - Agregar
+    - Editar
+    - Eliminar
+
+  - Fallas
+    - Agregar
+    - Editar
+    - Eliminar
+
+  - Observaciones
     - Agregar
     - Editar
     - Eliminar

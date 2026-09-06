@@ -38,7 +38,7 @@ function iniciarSesion(event) {
         localStorage.setItem(SESSION_KEY, JSON.stringify(data.usuario));
 
         // Redirigir al index principal
-        window.location.href = "../../index.html";
+        window.location.href = "/reporte-incidencias/index.html";
       } else {
         mostrarError(data.mensaje || "Credenciales incorrectas");
       }

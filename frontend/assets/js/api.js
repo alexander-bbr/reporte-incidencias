@@ -2,7 +2,7 @@
  * API base para llamar al backend
  */
 
-const API_BASE = "../../backend/api/";
+const API_BASE = "/reporte-incidencias/backend/api/";
 
 /**
  * Realiza una petición fetch al backend
