@@ -1,12 +1,12 @@
 reporte-incidencias/
 │
-├── index.html                   # Página principal (Redirige al login si no hay sesión)
+├── index.html                  # Página principal (Redirige al login si no hay sesión)
 │
 ├── frontend/
 │   │
 │   ├── assets/
 │   │   ├── css/
-│   │   │   ├── general.css       # Estilos globales
+│   │   │   ├── general.css     # Estilos globales
 │   │   │   └── login.css       # Estilos del login
 │   │   ├── fonts/              
 │   │   ├── images/             
@@ -57,4 +57,4 @@ reporte-incidencias/
 │   │
 │   └── config.php              
 │
-└── .htaccess            # Este no lo quiero, no creo que sea necesario       
+└── .htaccess                   # Este falta por hacerlo    

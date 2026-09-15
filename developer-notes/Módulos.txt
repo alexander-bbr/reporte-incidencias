@@ -29,29 +29,25 @@
   1. Sistemas
 
     - Reportes
-      - No puede Agregar, Editar ni Eliminar.
-      - Solo puede Editar la Etiqueta de la Incidencia
+      - No puede Agregar ni Eliminar Reportes, solo Editar, pero solo puede editar el campo solución y estado. El resto de campos no los puede editar sistemas (si acaso deberían de estar con readonly unicamente para que pueda ver que tiene escrito esos campos)
     
-    - Equipos
-      - Puede Agregar, Editar y Eliminar
-    
-    - Fallas
-      - Puede Agregar, Editar y Eliminar
-    
-    - Observaciones
-      - Puede Agregar, Editar y Eliminar
+    - Equipos (TODO)
+    - Fallas (TODO)
+    - Observaciones (TODO)
 
   2. Coordinadora
 
-    - Reportes (TODO)
+    - Reportes (TODO, menos editar los campos de Solución y estado, si acaso verlos, o sea con readonly)
     - Equipos (TODO)
-    - Usuarios (TODO)
+    - Fallas (TODO)
     - Observaciones (TODO)
+    - Usuarios (TODO)
   
   3. Admisionista
 
-    - Reportes (TODO)
+    - Reportes (TODO, menos editar los campos de Solución y estado, si acaso verlos, o sea con readonly)
     - Equipos (TODO)
+    - Fallas (TODO)
     - Observaciones (TODO)
 
 

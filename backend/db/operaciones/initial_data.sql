@@ -1,4 +1,9 @@
--- Insertar usuario de prueba (contraseña: admin123)
+/*
+    Insertar usuarios principales en el sistema
+*/
+
+
+-- Crear usuario del tipo Sistemas (contraseña: admin123)
 INSERT INTO usuario (cedula_usuario, contrasena, nombre, apellido, telefono, rol) 
 VALUES (
     '30717851', 
@@ -9,18 +14,7 @@ VALUES (
     'SISTEMAS'
 );
 
--- Insertar usuario admisionista (contraseña: admision123)
-INSERT INTO usuario (cedula_usuario, contrasena, nombre, apellido, telefono, rol) 
-VALUES (
-    '87654321', 
-    '$2y$10$eWJ5HgJrVQ6a9Zx8uZuqQ.f1p5NCXhH.9QJk4rH1h2S2Yq6a3mR2C', 
-    'María', 
-    'Pérez', 
-    '0416-7654321', 
-    'ADMISIONISTA'
-);
-
--- Insertar usuario coordinadora (contraseña: coordi123)
+-- Crear usuario del tipo Coordinadora (contraseña: coordi123)
 INSERT INTO usuario (cedula_usuario, contrasena, nombre, apellido, telefono, rol) 
 VALUES (
     '11223344', 
@@ -29,4 +23,15 @@ VALUES (
     'González', 
     '0414-9876543', 
     'COORDINADORA'
+);
+
+-- Crear usuario del tipo Admisionista (contraseña: admision123)
+INSERT INTO usuario (cedula_usuario, contrasena, nombre, apellido, telefono, rol) 
+VALUES (
+    '87654321', 
+    '$2y$10$eWJ5HgJrVQ6a9Zx8uZuqQ.f1p5NCXhH.9QJk4rH1h2S2Yq6a3mR2C', 
+    'María', 
+    'Pérez', 
+    '0416-7654321', 
+    'ADMISIONISTA'
 );

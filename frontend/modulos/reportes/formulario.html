@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../assets/css/global.css" />
+    <link rel="stylesheet" href="../../assets/css/fonts.css" />
+    <link rel="stylesheet" href="../../assets/css/formulario.css" />
+    <link
+      rel="shortcut icon"
+      href="/reporte-incidencias/public/favicon.ico"
+      type="image/x-icon"
+    />
+    <title>Formulario Reporte</title>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <h1>Reporte de Incidencias</h1>
+        </div>
+        <ul class="nav-menu">
+          <li><a href="../../../index.html">Inicio</a></li>
+          <li><a href="index.html" class="active">Reportes</a></li>
+          <li><a href="../equipos/index.html">Equipos</a></li>
+          <li><a href="../fallas/index.html">Fallas</a></li>
+          <li><a href="../observaciones/index.html">Observaciones</a></li>
+          <li><a href="../usuarios/index.html">Usuarios</a></li>
+          <li><a href="#" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+        </ul>
+        <div class="user-info" id="userInfo">
+          <span id="nombreUsuario">Cargando...</span>
+          <span class="badge" id="rolUsuario">ROL</span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <form
+        class="form"
+        id="reporteForm"
+        onsubmit="return guardarReporte(event);"
+      >
+        <header class="form-header">
+          <h2 id="formTitle">Agregar Reporte</h2>
+        </header>
+
+        <input type="hidden" id="modo" value="crear" />
+        <input type="hidden" id="idOriginal" value="" />
+
+        <!-- Título -->
+        <div class="form-group">
+          <label for="titulo"
+            >Título<span class="require-symbol">*</span></label
+          >
+          <input type="text" id="titulo" required autofocus />
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group">
+          <label for="descripcion"
+            >Descripción<span class="require-symbol">*</span></label
+          >
+          <textarea
+            id="descripcion"
+            rows="4"
+            placeholder="Describe el problema con detalle"
+            required
+          ></textarea>
+        </div>
+
+        <!-- Prioridad -->
+        <div class="form-group">
+          <label for="prioridad"
+            >Prioridad<span class="require-symbol">*</span></label
+          >
+          <select id="prioridad" required>
+            <option value="">Selecciona una prioridad</option>
+            <option value="BAJA">Baja</option>
+            <option value="MEDIA">Media</option>
+            <option value="ALTA">Alta</option>
+          </select>
+        </div>
+
+        <!-- Estado (solo visible en edición) -->
+        <div class="form-group" id="grupoEstado" style="display: none">
+          <label for="estado">Estado</label>
+          <select id="estado">
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="EN REVISION">En Revisión</option>
+            <option value="REVISADO">Revisado</option>
+          </select>
+        </div>
+
+        <!-- Solución (solo visible en edición y para SISTEMAS) -->
+        <div class="form-group" id="grupoSolucion" style="display: none">
+          <label for="solucion">Solución</label>
+          <textarea
+            id="solucion"
+            rows="4"
+            placeholder="Describe la solución aplicada (solo personal de Sistemas)"
+          ></textarea>
+        </div>
+
+        <!-- Equipos afectados -->
+        <div class="form-group">
+          <label>Equipos Afectados</label>
+          <div class="checkbox-group" id="equiposCheckbox">
+            <p class="text-muted">Cargando equipos...</p>
+          </div>
+        </div>
+
+        <!-- Fallas asociadas -->
+        <div class="form-group">
+          <label>Fallas Asociadas</label>
+          <div class="checkbox-group" id="fallasCheckbox">
+            <p class="text-muted">Cargando fallas...</p>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="buttons-wrapper">
+          <button type="submit" class="save-button" id="btnGuardar">
+            Guardar
+          </button>
+          <a href="index.html" class="cancel-button">Cancelar</a>
+        </div>
+
+        <div id="mensaje" class="message" style="display: none"></div>
+      </form>
+    </div>
+
+    <script src="../../assets/js/api.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/modulos/reportes.js"></script>
+  </body>
+</html>
