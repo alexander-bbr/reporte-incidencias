@@ -4,17 +4,20 @@
 
 let modoEdicion = false;
 let usuarioActual = null;
+let esSistemas = false;
 
 document.addEventListener("DOMContentLoaded", async function () {
   usuarioActual = await verificarSesion(true);
 
   if (usuarioActual) {
+    esSistemas = usuarioActual.rol === "SISTEMAS";
     mostrarInfoUsuario(usuarioActual);
 
     if (
       window.location.pathname.includes("index.html") ||
       window.location.pathname.endsWith("/reportes/")
     ) {
+      configurarVistaLista();
       cargarReportes();
     }
 
@@ -23,6 +26,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   }
 });
+
+/**
+ * Configura la vista de lista según el rol
+ * (oculta el botón "Agregar Reporte" para SISTEMAS)
+ */
+function configurarVistaLista() {
+  if (esSistemas) {
+    const btnAgregar = document.querySelector(".add-register");
+    if (btnAgregar) {
+      btnAgregar.style.display = "none";
+    }
+  }
+}
 
 /**
  * Carga la lista de reportes
@@ -69,7 +85,6 @@ function renderizarReportes(reportes) {
       minute: "2-digit",
     });
 
-    // Clases para badges de prioridad
     let prioridadClass = "";
     switch (reporte.prioridad) {
       case "ALTA":
@@ -83,7 +98,6 @@ function renderizarReportes(reportes) {
         break;
     }
 
-    // Clases para badges de estado
     let estadoClass = "";
     switch (reporte.estado) {
       case "PENDIENTE":
@@ -99,6 +113,15 @@ function renderizarReportes(reportes) {
 
     const autor = `${reporte.nombre} ${reporte.apellido}`;
 
+    // El botón eliminar solo se muestra si NO es SISTEMAS
+    const botonEliminar = esSistemas
+      ? ""
+      : `
+        <button onclick="eliminarReporte(${reporte.id_reporte})" class="delete-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+        </button>
+      `;
+
     html += `
             <tr>
                 <td><strong>#${reporte.id_reporte}</strong></td>
@@ -111,9 +134,7 @@ function renderizarReportes(reportes) {
                     <button onclick="editarReporte(${reporte.id_reporte})" class="edit-button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
-                    <button onclick="eliminarReporte(${reporte.id_reporte})" class="delete-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                    </button>
+                    ${botonEliminar}
                 </td>
             </tr>
         `;
@@ -147,15 +168,22 @@ function eliminarReporte(id) {
 }
 
 /**
- * Prepara el formulario
+ * Prepara el formulario según el rol
  */
 function prepararFormulario(usuario) {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  // SISTEMAS solo puede entrar en modo edición (no crear)
+  if (usuario.rol === "SISTEMAS" && !id) {
+    alert("Los usuarios de Sistemas no pueden crear reportes");
+    window.location.href = "index.html";
+    return;
+  }
+
   // Cargar equipos y fallas en los checkboxes
   cargarEquiposCheckbox();
   cargarFallasCheckbox();
-
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
 
   if (id) {
     // Modo edición
@@ -164,12 +192,14 @@ function prepararFormulario(usuario) {
     document.getElementById("formTitle").textContent = "Editar Reporte";
     document.getElementById("btnGuardar").textContent = "Actualizar";
 
-    // Mostrar grupo de estado
+    // Mostrar grupo de estado (para todos)
     document.getElementById("grupoEstado").style.display = "block";
 
     // Mostrar grupo de solución solo para SISTEMAS
-    if (usuario.rol === "SISTEMAS") {
+    if (esSistemas) {
       document.getElementById("grupoSolucion").style.display = "block";
+      // Bloquear todos los campos excepto estado y solución
+      bloquearCamposParaSistemas();
     }
 
     cargarReporte(id);
@@ -178,10 +208,32 @@ function prepararFormulario(usuario) {
     modoEdicion = false;
     document.getElementById("formTitle").textContent = "Agregar Reporte";
     document.getElementById("btnGuardar").textContent = "Guardar";
-    // En creación, estado y solución no se muestran
     document.getElementById("grupoEstado").style.display = "none";
     document.getElementById("grupoSolucion").style.display = "none";
   }
+}
+
+/**
+ * Bloquea los campos que SISTEMAS no puede editar
+ */
+function bloquearCamposParaSistemas() {
+  // Campos de texto
+  document.getElementById("titulo").readOnly = true;
+  document.getElementById("descripcion").readOnly = true;
+
+  // Select de prioridad
+  document.getElementById("prioridad").disabled = true;
+
+  // Los checkboxes de equipos y fallas se deshabilitan después de cargarse
+  // Para eso usamos un pequeño delay para esperar a que se rendericen
+  setTimeout(() => {
+    document
+      .querySelectorAll('input[name="equipos"]')
+      .forEach((cb) => (cb.disabled = true));
+    document
+      .querySelectorAll('input[name="fallas"]')
+      .forEach((cb) => (cb.disabled = true));
+  }, 500);
 }
 
 /**
@@ -204,6 +256,13 @@ function cargarEquiposCheckbox() {
           `;
         });
         contenedor.innerHTML = html;
+
+        // Si es SISTEMAS, deshabilitar los checkboxes
+        if (esSistemas) {
+          contenedor
+            .querySelectorAll('input[type="checkbox"]')
+            .forEach((cb) => (cb.disabled = true));
+        }
       } else {
         contenedor.innerHTML =
           '<p class="text-muted">No hay equipos registrados</p>';
@@ -236,6 +295,13 @@ function cargarFallasCheckbox() {
           `;
         });
         contenedor.innerHTML = html;
+
+        // Si es SISTEMAS, deshabilitar los checkboxes
+        if (esSistemas) {
+          contenedor
+            .querySelectorAll('input[type="checkbox"]')
+            .forEach((cb) => (cb.disabled = true));
+        }
       } else {
         contenedor.innerHTML =
           '<p class="text-muted">No hay fallas registradas</p>';
@@ -302,57 +368,69 @@ function cargarReporte(id) {
 function guardarReporte(event) {
   event.preventDefault();
 
-  const titulo = document.getElementById("titulo").value.trim();
-  const descripcion = document.getElementById("descripcion").value.trim();
-  const prioridad = document.getElementById("prioridad").value;
   const modo = document.getElementById("modo").value;
-
   const btn = document.getElementById("btnGuardar");
 
-  // Validar campos
-  if (!titulo || !descripcion || !prioridad) {
-    mostrarMensaje("Todos los campos obligatorios deben estar llenos", "error");
-    return false;
+  const datos = {};
+
+  if (esSistemas) {
+    // SISTEMAS solo envía estado y solución
+    datos.id = parseInt(document.getElementById("idOriginal").value);
+    datos.estado = document.getElementById("estado").value;
+    datos.solucion = document.getElementById("solucion").value.trim();
+
+    if (!datos.estado) {
+      mostrarMensaje("El estado es requerido", "error");
+      return false;
+    }
+  } else {
+    // ADMISIONISTA y COORDINADORA envían todo
+    const titulo = document.getElementById("titulo").value.trim();
+    const descripcion = document.getElementById("descripcion").value.trim();
+    const prioridad = document.getElementById("prioridad").value;
+
+    if (!titulo || !descripcion || !prioridad) {
+      mostrarMensaje(
+        "Todos los campos obligatorios deben estar llenos",
+        "error",
+      );
+      return false;
+    }
+
+    datos.titulo = titulo;
+    datos.descripcion = descripcion;
+    datos.prioridad = prioridad;
+
+    // Equipos y fallas
+    const equiposSeleccionados = [];
+    document
+      .querySelectorAll('input[name="equipos"]:checked')
+      .forEach((checkbox) => {
+        equiposSeleccionados.push(parseInt(checkbox.value));
+      });
+
+    const fallasSeleccionadas = [];
+    document
+      .querySelectorAll('input[name="fallas"]:checked')
+      .forEach((checkbox) => {
+        fallasSeleccionadas.push(parseInt(checkbox.value));
+      });
+
+    datos.equipos = equiposSeleccionados;
+    datos.fallas = fallasSeleccionadas;
+
+    if (modo === "editar") {
+      datos.id = parseInt(document.getElementById("idOriginal").value);
+      datos.estado = document.getElementById("estado").value;
+    }
   }
-
-  // Obtener equipos seleccionados
-  const equiposSeleccionados = [];
-  document
-    .querySelectorAll('input[name="equipos"]:checked')
-    .forEach((checkbox) => {
-      equiposSeleccionados.push(parseInt(checkbox.value));
-    });
-
-  // Obtener fallas seleccionadas
-  const fallasSeleccionadas = [];
-  document
-    .querySelectorAll('input[name="fallas"]:checked')
-    .forEach((checkbox) => {
-      fallasSeleccionadas.push(parseInt(checkbox.value));
-    });
 
   btn.disabled = true;
   btn.textContent = "Guardando...";
   ocultarMensaje();
 
-  const datos = {
-    titulo: titulo,
-    descripcion: descripcion,
-    prioridad: prioridad,
-    equipos: equiposSeleccionados,
-    fallas: fallasSeleccionadas,
-  };
-
   let metodo, endpoint;
   if (modo === "editar") {
-    datos.id = parseInt(document.getElementById("idOriginal").value);
-    datos.estado = document.getElementById("estado").value;
-
-    // Solo enviar solución si es SISTEMAS
-    if (usuarioActual.rol === "SISTEMAS") {
-      datos.solucion = document.getElementById("solucion").value.trim();
-    }
-
     metodo = putAPI;
     endpoint = "reportes.php";
   } else {

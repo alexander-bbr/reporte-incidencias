@@ -154,3 +154,27 @@
   cursor: pointer;
   accent-color: var(--blue-color);
 }
+
+/* Campos de solo lectura */
+.form-group input:read-only,
+.form-group textarea:read-only {
+  background: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* Selects deshabilitados */
+.form-group select:disabled {
+  background: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
+}
+
+/* Checkboxes deshabilitados */
+.checkbox-item input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+}
+
+.checkbox-item input[type="checkbox"]:disabled + span {
+  color: #999;
+}

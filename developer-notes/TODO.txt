@@ -5,17 +5,46 @@
   - Aplicarle la permisología correspondiente para cada módulo.
   - Hacer responsive la aplicación.
 
+
+
+---
+
+
+
 ## Usuarios
 
-  - Pulir los archivos, y pasarselos a la IA para que sepa como estoy trabajando y pueda hacer los otros módulos
+
+
+---
+
+
 
 ## Equipos
 
   - Hay un bug donde el campo Nombre, aparentemente guarda es el nombre del usuario que está registrando el equipo, en lugar de lo que se escribió en el campo Nombre. Hay que corregir esto
 
+
+
+
+---
+
+
+
 ## Reportes
 
+
+
+---
+
+
+
 - Hacer las correciones que escribí en Módulos.txt
+
+
+
+---
+
+
 
 ## Sign In
 
