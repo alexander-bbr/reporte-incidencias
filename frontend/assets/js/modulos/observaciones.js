@@ -16,6 +16,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Mostrar información del usuario en la barra
     mostrarInfoUsuario(usuario);
 
+    protegerModulo("observaciones");
+    aplicarPermisosNavbar();
+
     // Si estamos en index.html, cargar observaciones
     if (
       window.location.pathname.includes("index.html") ||
@@ -201,7 +204,6 @@ function guardarObservacion(event) {
   const modo = document.getElementById("modo").value;
 
   const btn = document.getElementById("btnGuardar");
-  const mensajeDiv = document.getElementById("mensaje");
 
   // Validar campos
   if (!titulo || !descripcion) {

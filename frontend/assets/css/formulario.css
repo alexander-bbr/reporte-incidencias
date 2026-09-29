@@ -1,6 +1,6 @@
 .form {
   background: var(--white-color);
-  padding: 2rem;
+  padding: 1.5rem 2rem 2rem;
   border-radius: 20px;
   max-width: 600px;
   margin: auto;
@@ -9,8 +9,9 @@
 
 #formTitle {
   text-align: center;
-  font-size: 1.7rem;
-  margin: 0rem 0 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
 }
 
 .form-group {
@@ -177,4 +178,11 @@
 
 .checkbox-item input[type="checkbox"]:disabled + span {
   color: #999;
+}
+
+/* Responsive */
+@media (width <= 480px) {
+  .form {
+    width: 96%;
+  }
 }

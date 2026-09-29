@@ -5,7 +5,6 @@
 
 /**
  * Verifica si el usuario está autenticado
- * @return bool True si está autenticado, false si no
  */
 function estaAutenticado() {
     return isset($_SESSION['usuario']) && !empty($_SESSION['usuario']);
@@ -13,14 +12,12 @@ function estaAutenticado() {
 
 /**
  * Verifica la sesión y redirige si no está autenticado
- * @param string $redirect URL de redirección (opcional)
  */
 function verificarSesion($redirect = null) {
     if (!estaAutenticado()) {
         if ($redirect) {
             header("Location: $redirect");
         } else {
-            // Para API
             echo json_encode([
                 'success' => false,
                 'mensaje' => 'No autorizado. Debes iniciar sesión.'
@@ -32,7 +29,6 @@ function verificarSesion($redirect = null) {
 
 /**
  * Obtiene el usuario actual de la sesión
- * @return array|null Datos del usuario o null si no hay sesión
  */
 function obtenerUsuarioActual() {
     return isset($_SESSION['usuario']) ? $_SESSION['usuario'] : null;
@@ -40,8 +36,6 @@ function obtenerUsuarioActual() {
 
 /**
  * Sanitiza una cadena para evitar inyección XSS
- * @param string $input Cadena a sanitizar
- * @return string Cadena sanitizada
  */
 function sanitizar($input) {
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
@@ -49,8 +43,6 @@ function sanitizar($input) {
 
 /**
  * Valida si un email tiene formato correcto
- * @param string $email Email a validar
- * @return bool True si es válido, false si no
  */
 function validarEmail($email) {
     return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
@@ -58,9 +50,6 @@ function validarEmail($email) {
 
 /**
  * Genera una respuesta JSON
- * @param bool $success Éxito o fracaso
- * @param string $mensaje Mensaje descriptivo
- * @param array $data Datos adicionales (opcional)
  */
 function respuestaJSON($success, $mensaje, $data = null) {
     $response = [
@@ -74,5 +63,22 @@ function respuestaJSON($success, $mensaje, $data = null) {
     
     echo json_encode($response);
     exit;
+}
+
+/**
+ * Verifica si el usuario actual tiene uno de los roles permitidos
+ * Si no, corta la ejecución y devuelve error JSON
+ * @param array $rolesPermitidos Lista de roles que pueden acceder
+ */
+function verificarRol($rolesPermitidos) {
+    $usuario = obtenerUsuarioActual();
+    
+    if (!$usuario) {
+        respuestaJSON(false, 'No autenticado');
+    }
+    
+    if (!in_array($usuario['rol'], $rolesPermitidos)) {
+        respuestaJSON(false, 'No tienes permisos para realizar esta acción');
+    }
 }
 ?>

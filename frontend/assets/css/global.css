@@ -162,18 +162,23 @@ body {
 
 /* Sección de bienvenida */
 .welcome-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+
   text-align: center;
-  margin-bottom: 40px;
-  padding: 30px;
+  padding: 1.5rem 2rem 1.8rem;
+  margin-bottom: 4rem;
   background: white;
   border-radius: 15px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.welcome-section h1 {
-  font-size: 28px;
+.welcome-section h2 {
+  font-size: 1.7rem;
   color: #333;
-  margin-bottom: 10px;
 }
 
 .welcome-section p {

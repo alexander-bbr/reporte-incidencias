@@ -2,14 +2,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 3rem;
   padding-bottom: 15px;
   border-bottom: 2px solid #e9ecef;
 }
 
 .page-header h2 {
   color: #333;
-  font-size: 24px;
+  text-align: center;
+  font-size: 1.8rem;
   font-weight: 600;
 }
 
@@ -71,7 +72,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 0.9rem;
   text-align: center;
 }
 
@@ -198,35 +199,50 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (width <= 480px) {
   .page-header {
+    display: flex;
     flex-direction: column;
-    gap: 15px;
-    align-items: stretch;
+    gap: 1.5rem;
   }
 
-  .table thead {
-    display: none;
+  .page-header h2 {
+    font-size: 1.8rem;
+  }
+
+  /* Botones */
+  .add-register,
+  .edit-button,
+  .delete-button {
+    padding: 7px 12px;
+    font-size: 0.8rem;
+  }
+
+  /* Botón de Editar Registro */
+  .edit-button {
+    background: #08ab85;
+  }
+
+  /* Botón de Eliminar Registro */
+  .delete-button {
+    background: #dc3545;
+  }
+
+  /* Tablas */
+  .table-responsive {
+    overflow-x: auto;
+    padding: 0;
+  }
+
+  .table {
+    font-size: 0.75rem;
+  }
+
+  .table thead th {
+    padding: 6px 7px;
   }
 
   .table tbody td {
-    display: block;
-    padding: 10px 15px;
-    border-bottom: none;
-    position: relative;
-    padding-left: 40%;
-  }
-
-  .table tbody td::before {
-    content: attr(data-label);
-    position: absolute;
-    left: 15px;
-    width: 35%;
-    font-weight: 600;
-    color: #495057;
-  }
-
-  .table tbody td:last-child {
-    border-bottom: 1px solid #dee2e6;
+    padding: 12px 15px;
   }
 }

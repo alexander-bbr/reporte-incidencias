@@ -16,6 +16,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Mostrar información del usuario en la barra
     mostrarInfoUsuario(usuario);
 
+    protegerModulo("equipos");
+    aplicarPermisosNavbar();
+
     // Si estamos en index.html, cargar equipos
     if (
       window.location.pathname.includes("index.html") ||
@@ -68,7 +71,6 @@ function renderizarEquipos(equipos) {
 
   let html = "";
   equipos.forEach((equipo) => {
-    // Determinar clases para badges
     let tipoBadgeClass = "";
     switch (equipo.tipo) {
       case "COMPUTADORA":
@@ -97,7 +99,7 @@ function renderizarEquipos(equipos) {
         break;
     }
 
-    const autor = `${equipo.nombre} ${equipo.apellido}`;
+    const autor = `${equipo.nombre_usuario} ${equipo.apellido_usuario}`;
     const descripcionCorta =
       equipo.descripcion && equipo.descripcion.length > 60
         ? equipo.descripcion.substring(0, 60) + "..."
@@ -106,7 +108,7 @@ function renderizarEquipos(equipos) {
     html += `
             <tr>
                 <td><strong>#${equipo.id_equipo}</strong></td>
-                <td><strong>${equipo.nombre}</strong></td>
+                <td><strong>${equipo.nombre_equipo}</strong></td>
                 <td>${descripcionCorta}</td>
                 <td><span class="badge ${tipoBadgeClass}">${equipo.tipo}</span></td>
                 <td><span class="badge ${estadoBadgeClass}">${equipo.estado}</span></td>
@@ -194,7 +196,7 @@ function cargarEquipo(id) {
       if (data.success && data.equipo) {
         const equipo = data.equipo;
         document.getElementById("idOriginal").value = equipo.id_equipo;
-        document.getElementById("nombre").value = equipo.nombre;
+        document.getElementById("nombre").value = equipo.nombre_equipo;
         document.getElementById("descripcion").value = equipo.descripcion || "";
         document.getElementById("tipo").value = equipo.tipo;
         document.getElementById("estado").value = equipo.estado;
@@ -223,7 +225,6 @@ function guardarEquipo(event) {
   const modo = document.getElementById("modo").value;
 
   const btn = document.getElementById("btnGuardar");
-  const mensajeDiv = document.getElementById("mensaje");
 
   // Validar campos
   if (!nombre || !tipo || !estado) {

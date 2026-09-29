@@ -16,6 +16,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Mostrar información del usuario en la barra
     mostrarInfoUsuario(usuario);
 
+    protegerModulo("usuarios");
+    aplicarPermisosNavbar();
+
     // Si estamos en index.html, cargar usuarios
     if (
       window.location.pathname.includes("index.html") ||
@@ -68,7 +71,6 @@ function renderizarUsuarios(usuarios) {
 
   let html = "";
   usuarios.forEach((usuario) => {
-    // Determinar clase para el badge según el rol
     let badgeClass = "";
     switch (usuario.rol) {
       case "SISTEMAS":
@@ -124,7 +126,7 @@ function eliminarUsuario(cedula) {
     .then((data) => {
       if (data.success) {
         alert("Usuario eliminado correctamente");
-        cargarUsuarios(); // Recargar la lista
+        cargarUsuarios();
       } else {
         alert("Error: " + data.mensaje);
       }
@@ -139,12 +141,10 @@ function eliminarUsuario(cedula) {
  * Prepara el formulario para crear o editar
  */
 function prepararFormulario() {
-  // Obtener parámetros de la URL
   const params = new URLSearchParams(window.location.search);
   const cedula = params.get("cedula");
 
   if (cedula) {
-    // Modo edición
     modoEdicion = true;
     document.getElementById("modo").value = "editar";
     document.getElementById("formTitle").textContent = "Editar Usuario";
@@ -153,17 +153,13 @@ function prepararFormulario() {
     document.getElementById("passHelp").textContent =
       "Déjalo vacío si no quieres cambiar la contraseña";
 
-    // Cargar datos del usuario
     cargarUsuario(cedula);
   } else {
-    // Modo creación
     modoEdicion = false;
     document.getElementById("formTitle").textContent = "Agregar Usuario";
     document.getElementById("btnGuardar").textContent = "Guardar";
     document.getElementById("cedula").disabled = false;
     document.getElementById("passHelp").textContent = "Mínimo 6 caracteres.";
-
-    // Hacer obligatoria la contraseña en creación
     document.getElementById("contrasena").required = true;
   }
 }
@@ -210,26 +206,21 @@ function guardarUsuario(event) {
   const modo = document.getElementById("modo").value;
 
   const btn = document.getElementById("btnGuardar");
-  const mensajeDiv = document.getElementById("mensaje");
 
-  // Validar campos
   if (!cedula || !nombre || !apellido || !telefono || !rol) {
     mostrarMensaje("Todos los campos son obligatorios", "error");
     return false;
   }
 
-  // Validar contraseña en creación
   if (modo === "crear" && (!contrasena || contrasena.length < 6)) {
     mostrarMensaje("La contraseña debe tener al menos 6 caracteres", "error");
     return false;
   }
 
-  // Deshabilitar botón
   btn.disabled = true;
   btn.textContent = "Guardando...";
   ocultarMensaje();
 
-  // Preparar datos
   const datos = {
     cedula: cedula,
     nombre: nombre,
@@ -238,12 +229,10 @@ function guardarUsuario(event) {
     rol: rol,
   };
 
-  // Agregar contraseña si se proporcionó
   if (contrasena) {
     datos.contrasena = contrasena;
   }
 
-  // Determinar método y endpoint
   let metodo, endpoint;
   if (modo === "editar") {
     metodo = putAPI;
@@ -251,19 +240,17 @@ function guardarUsuario(event) {
   } else {
     metodo = postAPI;
     endpoint = "usuarios.php";
-    // En creación, la contraseña es obligatoria
     if (!contrasena) {
       mostrarMensaje(
         "La contraseña es obligatoria para nuevos usuarios",
         "error",
       );
       btn.disabled = false;
-      btn.textContent = "💾 Guardar Usuario";
+      btn.textContent = "Guardar";
       return false;
     }
   }
 
-  // Enviar al backend
   metodo(endpoint, datos)
     .then((data) => {
       if (data.success) {
@@ -274,16 +261,14 @@ function guardarUsuario(event) {
       } else {
         mostrarMensaje(data.mensaje, "error");
         btn.disabled = false;
-        btn.textContent =
-          modo === "editar" ? "💾 Actualizar Usuario" : "💾 Guardar Usuario";
+        btn.textContent = modo === "editar" ? "Actualizar" : "Guardar";
       }
     })
     .catch((error) => {
       console.error("Error:", error);
       mostrarMensaje("Error al guardar el usuario", "error");
       btn.disabled = false;
-      btn.textContent =
-        modo === "editar" ? "💾 Actualizar Usuario" : "💾 Guardar Usuario";
+      btn.textContent = modo === "editar" ? "Actualizar" : "Guardar";
     });
 
   return false;
@@ -315,7 +300,6 @@ function mostrarMensaje(mensaje, tipo) {
     mensajeDiv.className = `message message-${tipo}`;
     mensajeDiv.style.display = "block";
 
-    // Ocultar después de 5 segundos si es éxito
     if (tipo === "success") {
       setTimeout(() => {
         mensajeDiv.style.display = "none";

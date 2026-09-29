@@ -1,15 +1,18 @@
 .login {
   margin: auto;
-  width: 450px;
+  max-width: 450px;
   border-radius: 20px;
   background: var(--white-color);
-  padding: 2rem;
+  padding: 1rem 2rem 1.5rem;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .logo {
@@ -17,8 +20,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 0.2rem;
 }
 
 .logo .icon {
@@ -26,13 +28,13 @@
 }
 
 .logo h1 {
-  font-size: 28px;
+  font-size: 2rem;
   color: #333;
   font-weight: 700;
 }
 
 .login-header h2 {
-  font-size: 18px;
+  font-size: 1.1rem;
   color: #666;
   font-weight: 500;
   margin-bottom: 8px;
@@ -43,8 +45,10 @@
   font-size: 14px;
 }
 
-.form-group {
-  margin-bottom: 20px;
+#loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 2.2rem;
 }
 
 .form-group label {
@@ -79,8 +83,7 @@
   color: #d32f2f;
   padding: 12px;
   border-radius: 10px;
-  font-size: 14px;
-  margin-bottom: 20px;
+  font-size: 0.9rem;
   border: 1px solid #fcc;
   text-align: center;
 }
@@ -138,16 +141,16 @@
 }
 
 /* Responsive */
-@media (max-width: 480px) {
-  .login-box {
-    padding: 30px 20px;
+@media (width <= 480px) {
+  .login {
+    width: 90%;
+  }
+
+  .logo .icon {
+    width: 4rem;
   }
 
   .logo h1 {
-    font-size: 24px;
-  }
-
-  .login-header h2 {
-    font-size: 16px;
+    font-size: 1.7rem;
   }
 }

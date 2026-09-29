@@ -169,7 +169,7 @@ function cerrarSesion() {
         // Eliminar de localStorage
         localStorage.removeItem(SESSION_KEY);
         // Redirigir al login
-        window.location.href = "frontend/login.html";
+        window.location.href = "/reporte-incidencias/frontend/login.html";
       } else {
         alert("Error al cerrar sesión: " + data.mensaje);
       }

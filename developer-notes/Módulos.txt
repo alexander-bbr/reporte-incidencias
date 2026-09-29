@@ -84,3 +84,9 @@
 
   - Sign In
     - Solo Iniciar Sesión, es la Coordinadora la que registra los usuarios
+
+
+## Notas sobre los Módulos
+
+- Se está usando ... para encriptar las contraseñas.
+- En el frontend, los registros se están ordenando de forma alfabética.

@@ -8,6 +8,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Mostrar información del usuario
     mostrarInfoUsuario(usuario);
 
+    // ✅ Aplicar permisos visuales
+    aplicarPermisosNavbar();
+    aplicarPermisosTarjetas();
+
     // Cargar estadísticas
     cargarEstadisticas();
   }
@@ -30,25 +34,10 @@ function mostrarInfoUsuario(usuario) {
   if (mensajeBienvenida) {
     mensajeBienvenida.textContent = `¡Bienvenido ${usuario.nombre}!, Selecciona un módulo para comenzar`;
   }
-
-  // Ocultar módulos según rol (ejemplo: ADMISIONISTA no ve Usuarios)
-  if (usuario.rol === "ADMISIONISTA") {
-    const modulesGrid = document.querySelector(".modules-grid");
-    if (modulesGrid) {
-      const cards = modulesGrid.querySelectorAll(".module-card");
-      // Ocultar el módulo de usuarios (última tarjeta)
-      if (cards.length > 4) {
-        cards[4].style.display = "none";
-      }
-    }
-  }
 }
 
 // Cargar las estadísticas del dashboard
 function cargarEstadisticas() {
-  // Como aún no tenemos el endpoint de estadísticas,
-  // usaremos datos de ejemplo o llamadas a los endpoints existentes
-
   // Cargar total de reportes
   getAPI("reportes.php")
     .then((data) => {
@@ -88,13 +77,15 @@ function cargarEstadisticas() {
     })
     .catch((error) => console.error("Error cargando observaciones:", error));
 
-  // Cargar total de usuarios
-  getAPI("usuarios.php")
-    .then((data) => {
-      if (data.success && data.usuarios) {
-        document.getElementById("totalUsuarios").textContent =
-          data.usuarios.length;
-      }
-    })
-    .catch((error) => console.error("Error cargando usuarios:", error));
+  // Cargar total de usuarios (solo si tiene permiso)
+  if (tienePermiso("usuarios", "ver")) {
+    getAPI("usuarios.php")
+      .then((data) => {
+        if (data.success && data.usuarios) {
+          document.getElementById("totalUsuarios").textContent =
+            data.usuarios.length;
+        }
+      })
+      .catch((error) => console.error("Error cargando usuarios:", error));
+  }
 }

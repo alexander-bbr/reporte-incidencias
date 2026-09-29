@@ -21,11 +21,19 @@ $method = $_SERVER['REQUEST_METHOD'];
 $conn = conectarDB();
 
 switch ($method) {
-    case 'GET':
+        case 'GET':
         if (isset($_GET['id'])) {
             // Obtener un equipo específico
             $id = intval($_GET['id']);
-            $sql = "SELECT e.*, u.nombre, u.apellido 
+            $sql = "SELECT 
+                        e.id_equipo,
+                        e.cedula_usuario,
+                        e.nombre AS nombre_equipo,
+                        e.descripcion,
+                        e.tipo,
+                        e.estado,
+                        u.nombre AS nombre_usuario,
+                        u.apellido AS apellido_usuario
                     FROM equipo e
                     INNER JOIN usuario u ON e.cedula_usuario = u.cedula_usuario
                     WHERE e.id_equipo = ?";
@@ -42,7 +50,15 @@ switch ($method) {
             }
         } else {
             // Obtener todos los equipos
-            $sql = "SELECT e.*, u.nombre, u.apellido 
+            $sql = "SELECT 
+                        e.id_equipo,
+                        e.cedula_usuario,
+                        e.nombre AS nombre_equipo,
+                        e.descripcion,
+                        e.tipo,
+                        e.estado,
+                        u.nombre AS nombre_usuario,
+                        u.apellido AS apellido_usuario
                     FROM equipo e
                     INNER JOIN usuario u ON e.cedula_usuario = u.cedula_usuario
                     ORDER BY e.nombre";

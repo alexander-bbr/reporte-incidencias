@@ -17,6 +17,9 @@ require_once __DIR__ . '/../includes/funciones.php';
 // Verificar autenticación
 verificarSesion();
 
+// ✅ Solo COORDINADORA puede gestionar usuarios
+verificarRol(['COORDINADORA']);
+
 $method = $_SERVER['REQUEST_METHOD'];
 $conn = conectarDB();
 

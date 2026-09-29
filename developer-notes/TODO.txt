@@ -2,9 +2,6 @@
 
 ## General
 
-  - Aplicarle la permisología correspondiente para cada módulo.
-  - Hacer responsive la aplicación.
-
 
 
 ---
@@ -21,9 +18,6 @@
 
 ## Equipos
 
-  - Hay un bug donde el campo Nombre, aparentemente guarda es el nombre del usuario que está registrando el equipo, en lugar de lo que se escribió en el campo Nombre. Hay que corregir esto
-
-
 
 
 ---
@@ -38,7 +32,23 @@
 
 
 
-- Hacer las correciones que escribí en Módulos.txt
+# Usuarios
+
+
+
+---
+
+
+
+# Fallas
+
+
+
+---
+
+
+
+# Observaciones
 
 
 
@@ -47,5 +57,3 @@
 
 
 ## Sign In
-
-  - No funciona la contraseña cuando la creo desde gestión de usuarios

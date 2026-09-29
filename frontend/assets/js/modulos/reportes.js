@@ -13,6 +13,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     esSistemas = usuarioActual.rol === "SISTEMAS";
     mostrarInfoUsuario(usuarioActual);
 
+    protegerModulo("reportes");
+    aplicarPermisosNavbar();
+
     if (
       window.location.pathname.includes("index.html") ||
       window.location.pathname.endsWith("/reportes/")
@@ -195,11 +198,15 @@ function prepararFormulario(usuario) {
     // Mostrar grupo de estado (para todos)
     document.getElementById("grupoEstado").style.display = "block";
 
-    // Mostrar grupo de solución solo para SISTEMAS
+    // Mostrar grupo de solución (para todos)
+    document.getElementById("grupoSolucion").style.display = "block";
+
     if (esSistemas) {
-      document.getElementById("grupoSolucion").style.display = "block";
-      // Bloquear todos los campos excepto estado y solución
+      // SISTEMAS: solo edita estado y solución
       bloquearCamposParaSistemas();
+    } else {
+      // COORDINADORA y ADMISIONISTA: estado y solución readonly
+      bloquearCamposParaNoSistemas();
     }
 
     cargarReporte(id);
@@ -215,6 +222,7 @@ function prepararFormulario(usuario) {
 
 /**
  * Bloquea los campos que SISTEMAS no puede editar
+ * (todo excepto estado y solución)
  */
 function bloquearCamposParaSistemas() {
   // Campos de texto
@@ -225,7 +233,6 @@ function bloquearCamposParaSistemas() {
   document.getElementById("prioridad").disabled = true;
 
   // Los checkboxes de equipos y fallas se deshabilitan después de cargarse
-  // Para eso usamos un pequeño delay para esperar a que se rendericen
   setTimeout(() => {
     document
       .querySelectorAll('input[name="equipos"]')
@@ -234,6 +241,16 @@ function bloquearCamposParaSistemas() {
       .querySelectorAll('input[name="fallas"]')
       .forEach((cb) => (cb.disabled = true));
   }, 500);
+}
+
+/**
+ * Bloquea los campos que COORDINADORA y ADMISIONISTA no pueden editar
+ * (solo estado y solución quedan readonly)
+ */
+function bloquearCamposParaNoSistemas() {
+  // Estado y Solución solo lectura
+  document.getElementById("estado").disabled = true;
+  document.getElementById("solucion").readOnly = true;
 }
 
 /**
@@ -251,7 +268,7 @@ function cargarEquiposCheckbox() {
           html += `
             <label class="checkbox-item">
               <input type="checkbox" name="equipos" value="${equipo.id_equipo}">
-              <span>#${equipo.id_equipo} - ${equipo.nombre} (${equipo.tipo})</span>
+              <span>#${equipo.id_equipo} - ${equipo.nombre_equipo} (${equipo.tipo})</span>
             </label>
           `;
         });
@@ -384,7 +401,7 @@ function guardarReporte(event) {
       return false;
     }
   } else {
-    // ADMISIONISTA y COORDINADORA envían todo
+    // ADMISIONISTA y COORDINADORA envían todo, MENOS estado ni solución
     const titulo = document.getElementById("titulo").value.trim();
     const descripcion = document.getElementById("descripcion").value.trim();
     const prioridad = document.getElementById("prioridad").value;
@@ -421,7 +438,7 @@ function guardarReporte(event) {
 
     if (modo === "editar") {
       datos.id = parseInt(document.getElementById("idOriginal").value);
-      datos.estado = document.getElementById("estado").value;
+      // ⚠️ NO enviar estado ni solución
     }
   }
 
