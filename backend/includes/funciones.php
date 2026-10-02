@@ -67,8 +67,6 @@ function respuestaJSON($success, $mensaje, $data = null) {
 
 /**
  * Verifica si el usuario actual tiene uno de los roles permitidos
- * Si no, corta la ejecución y devuelve error JSON
- * @param array $rolesPermitidos Lista de roles que pueden acceder
  */
 function verificarRol($rolesPermitidos) {
     $usuario = obtenerUsuarioActual();
@@ -80,5 +78,38 @@ function verificarRol($rolesPermitidos) {
     if (!in_array($usuario['rol'], $rolesPermitidos)) {
         respuestaJSON(false, 'No tienes permisos para realizar esta acción');
     }
+}
+
+/**
+ * Registra una acción en la tabla de auditoría
+ * @param string $accion - CREAR, EDITAR, ELIMINAR
+ * @param string $tabla - Tabla afectada
+ * @param string|null $idRegistro - ID del registro afectado
+ * @param string|null $descripcion - Descripción legible
+ * @param array|null $datosAnteriores - Datos antes del cambio (para EDITAR/ELIMINAR)
+ * @param array|null $datosNuevos - Datos después del cambio (para CREAR/EDITAR)
+ */
+function registrarAuditoria($accion, $tabla, $idRegistro = null, $descripcion = null, $datosAnteriores = null, $datosNuevos = null) {
+    $usuario = obtenerUsuarioActual();
+    if (!$usuario) return;
+    
+    $cedula = $usuario['cedula_usuario'];
+    
+    $datosAnt = $datosAnteriores ? json_encode($datosAnteriores, JSON_UNESCAPED_UNICODE) : null;
+    $datosNue = $datosNuevos ? json_encode($datosNuevos, JSON_UNESCAPED_UNICODE) : null;
+    
+    $conn = conectarDB();
+    
+    $sql = "INSERT INTO auditoria 
+            (cedula_usuario, accion, tabla_afectada, id_registro, descripcion, datos_anteriores, datos_nuevos) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sssssss", 
+        $cedula, $accion, $tabla, $idRegistro, $descripcion, $datosAnt, $datosNue
+    );
+    $stmt->execute();
+    
+    cerrarDB($conn);
 }
 ?>

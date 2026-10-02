@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Mostrar información del usuario
     mostrarInfoUsuario(usuario);
 
-    // ✅ Aplicar permisos visuales
+    // Aplicar permisos visuales
     aplicarPermisosNavbar();
     aplicarPermisosTarjetas();
 
@@ -42,8 +42,8 @@ function cargarEstadisticas() {
   getAPI("reportes.php")
     .then((data) => {
       if (data.success && data.reportes) {
-        document.getElementById("totalReportes").textContent =
-          data.reportes.length;
+        const totalReportes = document.getElementById("totalReportes");
+        if (totalReportes) totalReportes.textContent = data.reportes.length;
       }
     })
     .catch((error) => console.error("Error cargando reportes:", error));
@@ -52,8 +52,8 @@ function cargarEstadisticas() {
   getAPI("equipos.php")
     .then((data) => {
       if (data.success && data.equipos) {
-        document.getElementById("totalEquipos").textContent =
-          data.equipos.length;
+        const totalEquipos = document.getElementById("totalEquipos");
+        if (totalEquipos) totalEquipos.textContent = data.equipos.length;
       }
     })
     .catch((error) => console.error("Error cargando equipos:", error));
@@ -62,7 +62,8 @@ function cargarEstadisticas() {
   getAPI("fallas.php")
     .then((data) => {
       if (data.success && data.fallas) {
-        document.getElementById("totalFallas").textContent = data.fallas.length;
+        const totalFallas = document.getElementById("totalFallas");
+        if (totalFallas) totalFallas.textContent = data.fallas.length;
       }
     })
     .catch((error) => console.error("Error cargando fallas:", error));
@@ -71,8 +72,10 @@ function cargarEstadisticas() {
   getAPI("observaciones.php")
     .then((data) => {
       if (data.success && data.observaciones) {
-        document.getElementById("totalObservaciones").textContent =
-          data.observaciones.length;
+        const totalObservaciones =
+          document.getElementById("totalObservaciones");
+        if (totalObservaciones)
+          totalObservaciones.textContent = data.observaciones.length;
       }
     })
     .catch((error) => console.error("Error cargando observaciones:", error));
@@ -82,10 +85,23 @@ function cargarEstadisticas() {
     getAPI("usuarios.php")
       .then((data) => {
         if (data.success && data.usuarios) {
-          document.getElementById("totalUsuarios").textContent =
-            data.usuarios.length;
+          const totalUsuarios = document.getElementById("totalUsuarios");
+          if (totalUsuarios) totalUsuarios.textContent = data.usuarios.length;
         }
       })
       .catch((error) => console.error("Error cargando usuarios:", error));
+  }
+
+  // Cargar total de auditoría (solo si tiene permiso)
+  if (tienePermiso("auditoria", "ver")) {
+    getAPI("auditoria.php")
+      .then((data) => {
+        if (data.success && data.auditorias) {
+          const totalAuditoria = document.getElementById("totalAuditoria");
+          if (totalAuditoria)
+            totalAuditoria.textContent = data.auditorias.length;
+        }
+      })
+      .catch((error) => console.error("Error cargando auditoría:", error));
   }
 }

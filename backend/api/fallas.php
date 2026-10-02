@@ -4,7 +4,6 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Manejar solicitudes OPTIONS (preflight)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
@@ -14,7 +13,6 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../db/conexion.php';
 require_once __DIR__ . '/../includes/funciones.php';
 
-// Verificar autenticación
 verificarSesion();
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -23,7 +21,6 @@ $conn = conectarDB();
 switch ($method) {
     case 'GET':
         if (isset($_GET['id'])) {
-            // Obtener una falla específica
             $id = intval($_GET['id']);
             $sql = "SELECT * FROM falla WHERE id_falla = ?";
             $stmt = $conn->prepare($sql);
@@ -38,7 +35,6 @@ switch ($method) {
                 respuestaJSON(false, 'Falla no encontrada');
             }
         } else {
-            // Obtener todas las fallas
             $sql = "SELECT * FROM falla ORDER BY titulo";
             $result = $conn->query($sql);
             $fallas = $result->fetch_all(MYSQLI_ASSOC);
@@ -51,7 +47,6 @@ switch ($method) {
         // Crear falla
         $data = json_decode(file_get_contents('php://input'), true);
         
-        // Validar campos requeridos
         $camposRequeridos = ['titulo', 'descripcion'];
         foreach ($camposRequeridos as $campo) {
             if (!isset($data[$campo]) || empty($data[$campo])) {
@@ -62,7 +57,6 @@ switch ($method) {
         $titulo = sanitizar($data['titulo']);
         $descripcion = sanitizar($data['descripcion']);
         
-        // Verificar si ya existe una falla con el mismo título
         $sql = "SELECT id_falla FROM falla WHERE titulo = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $titulo);
@@ -74,7 +68,6 @@ switch ($method) {
             respuestaJSON(false, 'Ya existe una falla con ese título');
         }
         
-        // Insertar falla
         $sql = "INSERT INTO falla (titulo, descripcion) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $titulo, $descripcion);
@@ -82,14 +75,24 @@ switch ($method) {
         if ($stmt->execute()) {
             $id = $conn->insert_id;
             cerrarDB($conn);
-            respuestaJSON(true, 'Falla creada correctamente', [
-                'id' => $id,
-                'falla' => [
-                    'id_falla' => $id,
-                    'titulo' => $titulo,
-                    'descripcion' => $descripcion
-                ]
-            ]);
+            
+            $fallaCreada = [
+                'id_falla' => $id,
+                'titulo' => $titulo,
+                'descripcion' => $descripcion
+            ];
+            
+            // Auditoría
+            registrarAuditoria(
+                'CREAR', 
+                'falla', 
+                $id, 
+                "Falla creada: $titulo", 
+                null, 
+                $fallaCreada
+            );
+            
+            respuestaJSON(true, 'Falla creada correctamente', ['id' => $id]);
         } else {
             cerrarDB($conn);
             respuestaJSON(false, 'Error al crear la falla: ' . $stmt->error);
@@ -108,19 +111,20 @@ switch ($method) {
         $titulo = sanitizar($data['titulo'] ?? '');
         $descripcion = sanitizar($data['descripcion'] ?? '');
         
-        // Verificar que la falla existe
-        $sql = "SELECT id_falla FROM falla WHERE id_falla = ?";
+        // Obtener datos anteriores
+        $sql = "SELECT * FROM falla WHERE id_falla = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
+        $datosAnteriores = $result->fetch_assoc();
         
-        if ($result->num_rows === 0) {
+        if (!$datosAnteriores) {
             cerrarDB($conn);
             respuestaJSON(false, 'Falla no encontrada');
         }
         
-        // Verificar que no haya duplicado de título (excluyendo la actual)
+        // Verificar duplicado
         $sql = "SELECT id_falla FROM falla WHERE titulo = ? AND id_falla != ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("si", $titulo, $id);
@@ -132,13 +136,31 @@ switch ($method) {
             respuestaJSON(false, 'Ya existe otra falla con ese título');
         }
         
-        // Actualizar falla
         $sql = "UPDATE falla SET titulo = ?, descripcion = ? WHERE id_falla = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ssi", $titulo, $descripcion, $id);
         
         if ($stmt->execute()) {
+            // Obtener datos nuevos
+            $sql = "SELECT * FROM falla WHERE id_falla = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $datosNuevos = $result->fetch_assoc();
+            
             cerrarDB($conn);
+            
+            // Auditoría
+            registrarAuditoria(
+                'EDITAR', 
+                'falla', 
+                $id, 
+                "Falla editada: $titulo", 
+                $datosAnteriores, 
+                $datosNuevos
+            );
+            
             respuestaJSON(true, 'Falla actualizada correctamente');
         } else {
             cerrarDB($conn);
@@ -154,19 +176,20 @@ switch ($method) {
         
         $id = intval($_GET['id']);
         
-        // Verificar que la falla existe
-        $sql = "SELECT id_falla FROM falla WHERE id_falla = ?";
+        // Obtener datos antes de eliminar
+        $sql = "SELECT * FROM falla WHERE id_falla = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
+        $datosEliminados = $result->fetch_assoc();
         
-        if ($result->num_rows === 0) {
+        if (!$datosEliminados) {
             cerrarDB($conn);
             respuestaJSON(false, 'Falla no encontrada');
         }
         
-        // Verificar si la falla está siendo usada en reportes
+        // Verificar si está siendo usada en reportes
         $sql = "SELECT id_reporte_falla FROM reporte_falla WHERE id_falla = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
@@ -178,13 +201,23 @@ switch ($method) {
             respuestaJSON(false, 'No se puede eliminar la falla porque está asociada a uno o más reportes');
         }
         
-        // Eliminar falla
         $sql = "DELETE FROM falla WHERE id_falla = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         
         if ($stmt->execute()) {
             cerrarDB($conn);
+            
+            // Auditoría
+            registrarAuditoria(
+                'ELIMINAR', 
+                'falla', 
+                $id, 
+                "Falla eliminada: {$datosEliminados['titulo']}", 
+                $datosEliminados, 
+                null
+            );
+            
             respuestaJSON(true, 'Falla eliminada correctamente');
         } else {
             cerrarDB($conn);

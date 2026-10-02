@@ -21,7 +21,6 @@ $conn = conectarDB();
 switch ($method) {
     case 'GET':
         if (isset($_GET['id'])) {
-            // Obtener un reporte específico con sus relaciones
             $id = intval($_GET['id']);
             
             $sql = "SELECT r.*, u.nombre, u.apellido 
@@ -39,7 +38,7 @@ switch ($method) {
                 respuestaJSON(false, 'Reporte no encontrado');
             }
             
-            // Obtener equipos asociados
+            // Equipos asociados
             $sql = "SELECT e.* FROM equipo e
                     INNER JOIN reporte_equipo re ON e.id_equipo = re.id_equipo
                     WHERE re.id_reporte = ?";
@@ -49,7 +48,7 @@ switch ($method) {
             $result = $stmt->get_result();
             $reporte['equipos'] = $result->fetch_all(MYSQLI_ASSOC);
             
-            // Obtener fallas asociadas
+            // Fallas asociadas
             $sql = "SELECT f.* FROM falla f
                     INNER JOIN reporte_falla rf ON f.id_falla = rf.id_falla
                     WHERE rf.id_reporte = ?";
@@ -62,7 +61,6 @@ switch ($method) {
             cerrarDB($conn);
             respuestaJSON(true, 'Reporte encontrado', ['reporte' => $reporte]);
         } else {
-            // Obtener todos los reportes
             $sql = "SELECT r.*, u.nombre, u.apellido 
                     FROM reporte r
                     INNER JOIN usuario u ON r.cedula_usuario = u.cedula_usuario
@@ -79,22 +77,18 @@ switch ($method) {
         // Crear reporte
         $usuarioActual = obtenerUsuarioActual();
         
-        // SISTEMAS no puede crear reportes
         if ($usuarioActual['rol'] === 'SISTEMAS') {
             respuestaJSON(false, 'Los usuarios de Sistemas no pueden crear reportes');
         }
         
         $data = json_decode(file_get_contents('php://input'), true);
         
-        // Validar campos requeridos
         if (!isset($data['titulo']) || empty($data['titulo'])) {
             respuestaJSON(false, 'El título es requerido');
         }
-        
         if (!isset($data['descripcion']) || empty($data['descripcion'])) {
             respuestaJSON(false, 'La descripción es requerida');
         }
-        
         if (!isset($data['prioridad']) || empty($data['prioridad'])) {
             respuestaJSON(false, 'La prioridad es requerida');
         }
@@ -106,17 +100,14 @@ switch ($method) {
         $estado = 'PENDIENTE';
         $solucion = null;
         
-        // Validar prioridad
         $prioridadesValidas = ['BAJA', 'MEDIA', 'ALTA'];
         if (!in_array($prioridad, $prioridadesValidas)) {
             respuestaJSON(false, 'Prioridad no válida');
         }
         
-        // Iniciar transacción
         $conn->begin_transaction();
         
         try {
-            // Insertar reporte
             $sql = "INSERT INTO reporte (cedula_usuario, titulo, descripcion, estado, prioridad, solucion) 
                     VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
@@ -124,7 +115,6 @@ switch ($method) {
             $stmt->execute();
             $id_reporte = $conn->insert_id;
             
-            // Insertar equipos asociados
             if (isset($data['equipos']) && is_array($data['equipos'])) {
                 $sql = "INSERT INTO reporte_equipo (id_reporte, id_equipo) VALUES (?, ?)";
                 $stmt = $conn->prepare($sql);
@@ -135,7 +125,6 @@ switch ($method) {
                 }
             }
             
-            // Insertar fallas asociadas
             if (isset($data['fallas']) && is_array($data['fallas'])) {
                 $sql = "INSERT INTO reporte_falla (id_reporte, id_falla) VALUES (?, ?)";
                 $stmt = $conn->prepare($sql);
@@ -148,6 +137,27 @@ switch ($method) {
             
             $conn->commit();
             cerrarDB($conn);
+            
+            // Auditoría
+            $reporteCreado = [
+                'id_reporte' => $id_reporte,
+                'titulo' => $titulo,
+                'descripcion' => $descripcion,
+                'prioridad' => $prioridad,
+                'estado' => $estado,
+                'equipos' => $data['equipos'] ?? [],
+                'fallas' => $data['fallas'] ?? []
+            ];
+            
+            registrarAuditoria(
+                'CREAR', 
+                'reporte', 
+                $id_reporte, 
+                "Reporte creado: $titulo", 
+                null, 
+                $reporteCreado
+            );
+            
             respuestaJSON(true, 'Reporte creado correctamente', ['id' => $id_reporte]);
         } catch (Exception $e) {
             $conn->rollback();
@@ -168,25 +178,39 @@ switch ($method) {
         $usuarioActual = obtenerUsuarioActual();
         $esSistemas = ($usuarioActual['rol'] === 'SISTEMAS');
         
-        // Verificar que el reporte existe
-        $sql = "SELECT id_reporte, cedula_usuario FROM reporte WHERE id_reporte = ?";
+        // Obtener datos anteriores (con equipos y fallas)
+        $sql = "SELECT * FROM reporte WHERE id_reporte = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
-        $reporte = $result->fetch_assoc();
+        $datosAnteriores = $result->fetch_assoc();
         
-        if (!$reporte) {
+        if (!$datosAnteriores) {
             cerrarDB($conn);
             respuestaJSON(false, 'Reporte no encontrado');
         }
         
-        // Iniciar transacción
+        // Obtener equipos y fallas anteriores para auditoría
+        $sql = "SELECT id_equipo FROM reporte_equipo WHERE id_reporte = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $datosAnteriores['equipos'] = array_column($result->fetch_all(MYSQLI_ASSOC), 'id_equipo');
+        
+        $sql = "SELECT id_falla FROM reporte_falla WHERE id_reporte = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $datosAnteriores['fallas'] = array_column($result->fetch_all(MYSQLI_ASSOC), 'id_falla');
+        
         $conn->begin_transaction();
         
         try {
             if ($esSistemas) {
-                // SISTEMAS solo puede actualizar Estado y Solución
+                // SISTEMAS solo actualiza estado y solución
                 $estado = sanitizar($data['estado'] ?? '');
                 $solucion = isset($data['solucion']) ? sanitizar($data['solucion']) : '';
                 
@@ -203,23 +227,11 @@ switch ($method) {
                 $stmt = $conn->prepare($sql);
                 $stmt->bind_param("ssi", $estado, $solucion, $id);
                 $stmt->execute();
-                
             } else {
-                // ADMISIONISTA y COORDINADORA pueden editar todo
+                // COORDINADORA y ADMISIONISTA (no tocan estado ni solución)
                 $titulo = sanitizar($data['titulo'] ?? '');
                 $descripcion = sanitizar($data['descripcion'] ?? '');
-                $estado = sanitizar($data['estado'] ?? '');
                 $prioridad = sanitizar($data['prioridad'] ?? '');
-                
-                // Validar estado y prioridad
-                if (!empty($estado)) {
-                    $estadosValidos = ['PENDIENTE', 'EN REVISION', 'REVISADO'];
-                    if (!in_array($estado, $estadosValidos)) {
-                        $conn->rollback();
-                        cerrarDB($conn);
-                        respuestaJSON(false, 'Estado no válido');
-                    }
-                }
                 
                 if (!empty($prioridad)) {
                     $prioridadesValidas = ['BAJA', 'MEDIA', 'ALTA'];
@@ -230,7 +242,6 @@ switch ($method) {
                     }
                 }
                 
-                // Construir la consulta dinámicamente
                 $sql = "UPDATE reporte SET ";
                 $params = [];
                 $types = "";
@@ -240,19 +251,11 @@ switch ($method) {
                     $params[] = $titulo;
                     $types .= "s";
                 }
-                
                 if (!empty($descripcion)) {
                     $sql .= "descripcion = ?, ";
                     $params[] = $descripcion;
                     $types .= "s";
                 }
-                
-                if (!empty($estado)) {
-                    $sql .= "estado = ?, ";
-                    $params[] = $estado;
-                    $types .= "s";
-                }
-                
                 if (!empty($prioridad)) {
                     $sql .= "prioridad = ?, ";
                     $params[] = $prioridad;
@@ -268,7 +271,6 @@ switch ($method) {
                 $stmt->bind_param($types, ...$params);
                 $stmt->execute();
                 
-                // Actualizar equipos asociados (eliminar y volver a insertar)
                 if (isset($data['equipos']) && is_array($data['equipos'])) {
                     $sql = "DELETE FROM reporte_equipo WHERE id_reporte = ?";
                     $stmt = $conn->prepare($sql);
@@ -284,7 +286,6 @@ switch ($method) {
                     }
                 }
                 
-                // Actualizar fallas asociadas
                 if (isset($data['fallas']) && is_array($data['fallas'])) {
                     $sql = "DELETE FROM reporte_falla WHERE id_reporte = ?";
                     $stmt = $conn->prepare($sql);
@@ -302,7 +303,45 @@ switch ($method) {
             }
             
             $conn->commit();
+            
+            // Obtener datos nuevos
+            $sql = "SELECT * FROM reporte WHERE id_reporte = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $datosNuevos = $result->fetch_assoc();
+            
+            $sql = "SELECT id_equipo FROM reporte_equipo WHERE id_reporte = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $datosNuevos['equipos'] = array_column($result->fetch_all(MYSQLI_ASSOC), 'id_equipo');
+            
+            $sql = "SELECT id_falla FROM reporte_falla WHERE id_reporte = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $datosNuevos['fallas'] = array_column($result->fetch_all(MYSQLI_ASSOC), 'id_falla');
+            
             cerrarDB($conn);
+            
+            // Auditoría
+            $descripcion = $esSistemas 
+                ? "Reporte actualizado (estado/solución): {$datosNuevos['titulo']}"
+                : "Reporte editado: {$datosNuevos['titulo']}";
+            
+            registrarAuditoria(
+                'EDITAR', 
+                'reporte', 
+                $id, 
+                $descripcion, 
+                $datosAnteriores, 
+                $datosNuevos
+            );
+            
             respuestaJSON(true, 'Reporte actualizado correctamente');
         } catch (Exception $e) {
             $conn->rollback();
@@ -315,7 +354,6 @@ switch ($method) {
         // Eliminar reporte
         $usuarioActual = obtenerUsuarioActual();
         
-        // SISTEMAS no puede eliminar reportes
         if ($usuarioActual['rol'] === 'SISTEMAS') {
             respuestaJSON(false, 'Los usuarios de Sistemas no pueden eliminar reportes');
         }
@@ -326,23 +364,37 @@ switch ($method) {
         
         $id = intval($_GET['id']);
         
-        // Verificar que el reporte existe
-        $sql = "SELECT id_reporte FROM reporte WHERE id_reporte = ?";
+        // Obtener datos antes de eliminar
+        $sql = "SELECT * FROM reporte WHERE id_reporte = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
+        $datosEliminados = $result->fetch_assoc();
         
-        if ($result->num_rows === 0) {
+        if (!$datosEliminados) {
             cerrarDB($conn);
             respuestaJSON(false, 'Reporte no encontrado');
         }
         
-        // Iniciar transacción
+        // Obtener equipos y fallas asociados
+        $sql = "SELECT id_equipo FROM reporte_equipo WHERE id_reporte = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $datosEliminados['equipos'] = array_column($result->fetch_all(MYSQLI_ASSOC), 'id_equipo');
+        
+        $sql = "SELECT id_falla FROM reporte_falla WHERE id_reporte = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $datosEliminados['fallas'] = array_column($result->fetch_all(MYSQLI_ASSOC), 'id_falla');
+        
         $conn->begin_transaction();
         
         try {
-            // Eliminar relaciones
             $sql = "DELETE FROM reporte_equipo WHERE id_reporte = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $id);
@@ -353,7 +405,6 @@ switch ($method) {
             $stmt->bind_param("i", $id);
             $stmt->execute();
             
-            // Eliminar reporte
             $sql = "DELETE FROM reporte WHERE id_reporte = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $id);
@@ -361,6 +412,17 @@ switch ($method) {
             
             $conn->commit();
             cerrarDB($conn);
+            
+            // Auditoría
+            registrarAuditoria(
+                'ELIMINAR', 
+                'reporte', 
+                $id, 
+                "Reporte eliminado: {$datosEliminados['titulo']}", 
+                $datosEliminados, 
+                null
+            );
+            
             respuestaJSON(true, 'Reporte eliminado correctamente');
         } catch (Exception $e) {
             $conn->rollback();

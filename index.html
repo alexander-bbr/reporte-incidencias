@@ -36,6 +36,9 @@
           <li>
             <a href="frontend/modulos/usuarios/index.html">Usuarios</a>
           </li>
+          <li>
+            <a href="frontend/modulos/auditoria/index.html">Auditoría</a>
+          </li>
           <li><a href="#" onclick="cerrarSesion()">Cerrar Sesión</a></li>
         </ul>
 
@@ -110,6 +113,17 @@
           <h3>Usuarios</h3>
           <p>Gestión de usuarios del sistema</p>
           <span class="badge-count" id="totalUsuarios">0</span>
+        </div>
+        <div
+          class="module-card"
+          onclick="
+            window.location.href = 'frontend/modulos/auditoria/index.html'
+          "
+        >
+          <div class="module-icon">🔍</div>
+          <h3>Auditoría</h3>
+          <p>Registro de movimientos del sistema</p>
+          <span class="badge-count" id="totalAuditoria">0</span>
         </div>
       </div>
     </div>

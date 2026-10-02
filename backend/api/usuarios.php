@@ -4,7 +4,6 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Manejar solicitudes OPTIONS (preflight)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
@@ -14,10 +13,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../db/conexion.php';
 require_once __DIR__ . '/../includes/funciones.php';
 
-// Verificar autenticación
 verificarSesion();
-
-// ✅ Solo COORDINADORA puede gestionar usuarios
 verificarRol(['COORDINADORA']);
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -26,7 +22,6 @@ $conn = conectarDB();
 switch ($method) {
     case 'GET':
         if (isset($_GET['cedula'])) {
-            // Obtener un usuario específico
             $cedula = $_GET['cedula'];
             $sql = "SELECT cedula_usuario, nombre, apellido, telefono, rol FROM usuario WHERE cedula_usuario = ?";
             $stmt = $conn->prepare($sql);
@@ -41,7 +36,6 @@ switch ($method) {
                 respuestaJSON(false, 'Usuario no encontrado');
             }
         } else {
-            // Obtener todos los usuarios
             $sql = "SELECT cedula_usuario, nombre, apellido, telefono, rol FROM usuario ORDER BY nombre";
             $result = $conn->query($sql);
             $usuarios = $result->fetch_all(MYSQLI_ASSOC);
@@ -54,7 +48,6 @@ switch ($method) {
         // Crear usuario
         $data = json_decode(file_get_contents('php://input'), true);
         
-        // Validar campos requeridos
         $camposRequeridos = ['cedula', 'nombre', 'apellido', 'telefono', 'rol', 'contrasena'];
         foreach ($camposRequeridos as $campo) {
             if (!isset($data[$campo]) || empty($data[$campo])) {
@@ -81,23 +74,33 @@ switch ($method) {
             respuestaJSON(false, 'La cédula ya está registrada');
         }
         
-        // Insertar usuario
         $sql = "INSERT INTO usuario (cedula_usuario, contrasena, nombre, apellido, telefono, rol) 
                 VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ssssss", $cedula, $contrasena, $nombre, $apellido, $telefono, $rol);
         
         if ($stmt->execute()) {
+            $usuarioCreado = [
+                'cedula_usuario' => $cedula,
+                'nombre' => $nombre,
+                'apellido' => $apellido,
+                'telefono' => $telefono,
+                'rol' => $rol
+            ];
+            
             cerrarDB($conn);
-            respuestaJSON(true, 'Usuario creado correctamente', [
-                'usuario' => [
-                    'cedula_usuario' => $cedula,
-                    'nombre' => $nombre,
-                    'apellido' => $apellido,
-                    'telefono' => $telefono,
-                    'rol' => $rol
-                ]
-            ]);
+            
+            // Auditoría
+            registrarAuditoria(
+                'CREAR', 
+                'usuario', 
+                $cedula, 
+                "Usuario creado: $nombre $apellido ($rol)", 
+                null, 
+                $usuarioCreado
+            );
+            
+            respuestaJSON(true, 'Usuario creado correctamente', ['usuario' => $usuarioCreado]);
         } else {
             cerrarDB($conn);
             respuestaJSON(false, 'Error al crear el usuario: ' . $stmt->error);
@@ -117,6 +120,19 @@ switch ($method) {
         $apellido = sanitizar($data['apellido'] ?? '');
         $telefono = sanitizar($data['telefono'] ?? '');
         $rol = sanitizar($data['rol'] ?? '');
+        
+        // Obtener datos actuales ANTES de modificar (para auditoría)
+        $sql = "SELECT cedula_usuario, nombre, apellido, telefono, rol FROM usuario WHERE cedula_usuario = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $cedula);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $datosAnteriores = $result->fetch_assoc();
+        
+        if (!$datosAnteriores) {
+            cerrarDB($conn);
+            respuestaJSON(false, 'Usuario no encontrado');
+        }
         
         // Construir la consulta dinámicamente
         $sql = "UPDATE usuario SET ";
@@ -147,7 +163,7 @@ switch ($method) {
             $types .= "s";
         }
         
-        // Si viene contraseña, actualizarla
+        // Si viene contraseña, actualizarla (no se audita por seguridad)
         if (isset($data['contrasena']) && !empty($data['contrasena'])) {
             $contrasena = password_hash($data['contrasena'], PASSWORD_DEFAULT);
             $sql .= "contrasena = ?, ";
@@ -155,9 +171,7 @@ switch ($method) {
             $types .= "s";
         }
         
-        // Eliminar la última coma y espacio
         $sql = rtrim($sql, ", ");
-        
         $sql .= " WHERE cedula_usuario = ?";
         $params[] = $cedula;
         $types .= "s";
@@ -166,7 +180,26 @@ switch ($method) {
         $stmt->bind_param($types, ...$params);
         
         if ($stmt->execute()) {
+            // Obtener datos nuevos
+            $sql = "SELECT cedula_usuario, nombre, apellido, telefono, rol FROM usuario WHERE cedula_usuario = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("s", $cedula);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $datosNuevos = $result->fetch_assoc();
+            
             cerrarDB($conn);
+            
+            // Auditoría
+            registrarAuditoria(
+                'EDITAR', 
+                'usuario', 
+                $cedula, 
+                "Usuario editado: {$datosNuevos['nombre']} {$datosNuevos['apellido']}", 
+                $datosAnteriores, 
+                $datosNuevos
+            );
+            
             respuestaJSON(true, 'Usuario actualizado correctamente');
         } else {
             cerrarDB($conn);
@@ -189,25 +222,36 @@ switch ($method) {
             respuestaJSON(false, 'No puedes eliminar tu propio usuario');
         }
         
-        // Verificar si el usuario existe
-        $sql = "SELECT cedula_usuario FROM usuario WHERE cedula_usuario = ?";
+        // Obtener datos ANTES de eliminar (para auditoría)
+        $sql = "SELECT cedula_usuario, nombre, apellido, telefono, rol FROM usuario WHERE cedula_usuario = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $cedula);
         $stmt->execute();
         $result = $stmt->get_result();
+        $datosEliminados = $result->fetch_assoc();
         
-        if ($result->num_rows === 0) {
+        if (!$datosEliminados) {
             cerrarDB($conn);
             respuestaJSON(false, 'Usuario no encontrado');
         }
         
-        // Eliminar usuario
         $sql = "DELETE FROM usuario WHERE cedula_usuario = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $cedula);
         
         if ($stmt->execute()) {
             cerrarDB($conn);
+            
+            // Auditoría
+            registrarAuditoria(
+                'ELIMINAR', 
+                'usuario', 
+                $cedula, 
+                "Usuario eliminado: {$datosEliminados['nombre']} {$datosEliminados['apellido']}", 
+                $datosEliminados, 
+                null
+            );
+            
             respuestaJSON(true, 'Usuario eliminado correctamente');
         } else {
             cerrarDB($conn);

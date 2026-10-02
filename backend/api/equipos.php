@@ -4,7 +4,6 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
-// Manejar solicitudes OPTIONS (preflight)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
@@ -14,16 +13,14 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../db/conexion.php';
 require_once __DIR__ . '/../includes/funciones.php';
 
-// Verificar autenticación
 verificarSesion();
 
 $method = $_SERVER['REQUEST_METHOD'];
 $conn = conectarDB();
 
 switch ($method) {
-        case 'GET':
+    case 'GET':
         if (isset($_GET['id'])) {
-            // Obtener un equipo específico
             $id = intval($_GET['id']);
             $sql = "SELECT 
                         e.id_equipo,
@@ -49,7 +46,6 @@ switch ($method) {
                 respuestaJSON(false, 'Equipo no encontrado');
             }
         } else {
-            // Obtener todos los equipos
             $sql = "SELECT 
                         e.id_equipo,
                         e.cedula_usuario,
@@ -73,7 +69,6 @@ switch ($method) {
         // Crear equipo
         $data = json_decode(file_get_contents('php://input'), true);
         
-        // Validar campos requeridos
         $camposRequeridos = ['nombre', 'tipo', 'estado'];
         foreach ($camposRequeridos as $campo) {
             if (!isset($data[$campo]) || empty($data[$campo])) {
@@ -87,7 +82,6 @@ switch ($method) {
         $tipo = sanitizar($data['tipo']);
         $estado = sanitizar($data['estado']);
         
-        // Validar tipo y estado
         $tiposValidos = ['COMPUTADORA', 'IMPRESORA', 'TELEFONO', 'OTRO'];
         $estadosValidos = ['OPERATIVO', 'MANTENIMIENTO', 'INOPERATIVO'];
         
@@ -99,7 +93,6 @@ switch ($method) {
             respuestaJSON(false, 'Estado de equipo no válido');
         }
         
-        // Insertar equipo
         $sql = "INSERT INTO equipo (cedula_usuario, nombre, descripcion, tipo, estado) 
                 VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
@@ -108,17 +101,27 @@ switch ($method) {
         if ($stmt->execute()) {
             $id = $conn->insert_id;
             cerrarDB($conn);
-            respuestaJSON(true, 'Equipo creado correctamente', [
-                'id' => $id,
-                'equipo' => [
-                    'id_equipo' => $id,
-                    'cedula_usuario' => $cedula_usuario,
-                    'nombre' => $nombre,
-                    'descripcion' => $descripcion,
-                    'tipo' => $tipo,
-                    'estado' => $estado
-                ]
-            ]);
+            
+            $equipoCreado = [
+                'id_equipo' => $id,
+                'cedula_usuario' => $cedula_usuario,
+                'nombre' => $nombre,
+                'descripcion' => $descripcion,
+                'tipo' => $tipo,
+                'estado' => $estado
+            ];
+            
+            // Auditoría
+            registrarAuditoria(
+                'CREAR', 
+                'equipo', 
+                $id, 
+                "Equipo creado: $nombre ($tipo)", 
+                null, 
+                $equipoCreado
+            );
+            
+            respuestaJSON(true, 'Equipo creado correctamente', ['id' => $id]);
         } else {
             cerrarDB($conn);
             respuestaJSON(false, 'Error al crear el equipo: ' . $stmt->error);
@@ -139,20 +142,19 @@ switch ($method) {
         $tipo = sanitizar($data['tipo'] ?? '');
         $estado = sanitizar($data['estado'] ?? '');
         
-        // Verificar que el equipo existe
-        $sql = "SELECT cedula_usuario FROM equipo WHERE id_equipo = ?";
+        // Obtener datos anteriores
+        $sql = "SELECT * FROM equipo WHERE id_equipo = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
-        $equipo = $result->fetch_assoc();
+        $datosAnteriores = $result->fetch_assoc();
         
-        if (!$equipo) {
+        if (!$datosAnteriores) {
             cerrarDB($conn);
             respuestaJSON(false, 'Equipo no encontrado');
         }
         
-        // Validar tipo y estado si vienen
         if (!empty($tipo)) {
             $tiposValidos = ['COMPUTADORA', 'IMPRESORA', 'TELEFONO', 'OTRO'];
             if (!in_array($tipo, $tiposValidos)) {
@@ -169,7 +171,6 @@ switch ($method) {
             }
         }
         
-        // Construir la consulta dinámicamente
         $sql = "UPDATE equipo SET ";
         $params = [];
         $types = "";
@@ -198,9 +199,7 @@ switch ($method) {
             $types .= "s";
         }
         
-        // Eliminar la última coma y espacio
         $sql = rtrim($sql, ", ");
-        
         $sql .= " WHERE id_equipo = ?";
         $params[] = $id;
         $types .= "i";
@@ -209,7 +208,26 @@ switch ($method) {
         $stmt->bind_param($types, ...$params);
         
         if ($stmt->execute()) {
+            // Obtener datos nuevos
+            $sql = "SELECT * FROM equipo WHERE id_equipo = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $datosNuevos = $result->fetch_assoc();
+            
             cerrarDB($conn);
+            
+            // Auditoría
+            registrarAuditoria(
+                'EDITAR', 
+                'equipo', 
+                $id, 
+                "Equipo editado: {$datosNuevos['nombre']}", 
+                $datosAnteriores, 
+                $datosNuevos
+            );
+            
             respuestaJSON(true, 'Equipo actualizado correctamente');
         } else {
             cerrarDB($conn);
@@ -225,25 +243,42 @@ switch ($method) {
         
         $id = intval($_GET['id']);
         
-        // Verificar que el equipo existe
-        $sql = "SELECT id_equipo FROM equipo WHERE id_equipo = ?";
+        // Obtener datos antes de eliminar
+        $sql = "SELECT * FROM equipo WHERE id_equipo = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
+        $datosEliminados = $result->fetch_assoc();
         
-        if ($result->num_rows === 0) {
+        if (!$datosEliminados) {
             cerrarDB($conn);
             respuestaJSON(false, 'Equipo no encontrado');
         }
         
-        // Eliminar equipo
+        // Eliminar relaciones con reportes primero
+        $sql = "DELETE FROM reporte_equipo WHERE id_equipo = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        
         $sql = "DELETE FROM equipo WHERE id_equipo = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);
         
         if ($stmt->execute()) {
             cerrarDB($conn);
+            
+            // Auditoría
+            registrarAuditoria(
+                'ELIMINAR', 
+                'equipo', 
+                $id, 
+                "Equipo eliminado: {$datosEliminados['nombre']}", 
+                $datosEliminados, 
+                null
+            );
+            
             respuestaJSON(true, 'Equipo eliminado correctamente');
         } else {
             cerrarDB($conn);
