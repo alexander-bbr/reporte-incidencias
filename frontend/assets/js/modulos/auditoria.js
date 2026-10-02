@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   if (usuario) {
     mostrarInfoUsuario(usuario);
 
+    // ✅ Verificar permisos
     protegerModulo("auditoria");
     aplicarPermisosNavbar();
 
@@ -23,7 +24,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 function cargarAuditoria() {
   const tbody = document.getElementById("tbodyAuditoria");
   tbody.innerHTML =
-    '<tr><td colspan="7" class="text-center">Cargando auditoría...</td></tr>';
+    '<tr><td colspan="6" class="text-center">Cargando auditoría...</td></tr>';
 
   getAPI("auditoria.php")
     .then((data) => {
@@ -31,13 +32,13 @@ function cargarAuditoria() {
         auditoriasCargadas = data.auditorias;
         renderizarAuditoria(data.auditorias);
       } else {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">${data.mensaje}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">${data.mensaje}</td></tr>`;
       }
     })
     .catch((error) => {
       console.error("Error:", error);
       tbody.innerHTML =
-        '<tr><td colspan="7" class="text-center text-danger">Error al cargar la auditoría</td></tr>';
+        '<tr><td colspan="6" class="text-center text-danger">Error al cargar la auditoría</td></tr>';
     });
 }
 
@@ -78,7 +79,7 @@ function renderizarAuditoria(auditorias) {
 
   if (!auditorias || auditorias.length === 0) {
     tbody.innerHTML =
-      '<tr><td colspan="7" class="text-center">No hay movimientos registrados</td></tr>';
+      '<tr><td colspan="6" class="text-center">No hay movimientos registrados</td></tr>';
     return;
   }
 
@@ -110,6 +111,9 @@ function renderizarAuditoria(auditorias) {
         break;
     }
 
+    // ✅ Generar descripción legible
+    const descripcion = generarDescripcion(a);
+
     html += `
             <tr>
                 <td><strong>#${a.id_auditoria}</strong></td>
@@ -117,12 +121,7 @@ function renderizarAuditoria(auditorias) {
                 <td>${usuario}</td>
                 <td><span class="badge ${accionClass}">${a.accion}</span></td>
                 <td>${a.tabla_afectada}</td>
-                <td>${a.descripcion || "-"}</td>
-                <td>
-                    <button onclick="verDetalle(${a.id_auditoria})" class="edit-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    </button>
-                </td>
+                <td>${descripcion}</td>
             </tr>
         `;
   });
@@ -131,65 +130,144 @@ function renderizarAuditoria(auditorias) {
 }
 
 /**
- * Muestra el detalle de un movimiento
+ * Genera la descripción legible según la acción
  */
-function verDetalle(id) {
-  const auditoria = auditoriasCargadas.find((a) => a.id_auditoria === id);
-  if (!auditoria) return;
+function generarDescripcion(auditoria) {
+  const tabla = auditoria.tabla_afectada;
+  const accion = auditoria.accion;
 
-  const modal = document.getElementById("modalDetalle");
-  const modalBody = document.getElementById("modalBody");
+  let datosAnt = null;
+  let datosNue = null;
 
-  let html = `
-    <div class="detalle-seccion">
-      <h4>Información general</h4>
-      <p><strong>ID:</strong> #${auditoria.id_auditoria}</p>
-      <p><strong>Fecha:</strong> ${new Date(auditoria.fecha).toLocaleString("es-ES")}</p>
-      <p><strong>Usuario:</strong> ${auditoria.nombre_usuario ? `${auditoria.nombre_usuario} ${auditoria.apellido_usuario} (${auditoria.cedula_usuario})` : auditoria.cedula_usuario}</p>
-      <p><strong>Acción:</strong> ${auditoria.accion}</p>
-      <p><strong>Tabla:</strong> ${auditoria.tabla_afectada}</p>
-      <p><strong>ID del registro:</strong> ${auditoria.id_registro || "-"}</p>
-      <p><strong>Descripción:</strong> ${auditoria.descripcion || "-"}</p>
-    </div>
-  `;
-
-  if (auditoria.datos_anteriores) {
-    try {
-      const datosAnt = JSON.parse(auditoria.datos_anteriores);
-      html += `
-        <div class="detalle-seccion">
-          <h4>Datos anteriores</h4>
-          <pre>${JSON.stringify(datosAnt, null, 2)}</pre>
-        </div>
-      `;
-    } catch (e) {
-      html += `<div class="detalle-seccion"><h4>Datos anteriores</h4><pre>${auditoria.datos_anteriores}</pre></div>`;
+  try {
+    if (auditoria.datos_anteriores) {
+      datosAnt = JSON.parse(auditoria.datos_anteriores);
     }
+  } catch (e) {
+    datosAnt = null;
   }
 
-  if (auditoria.datos_nuevos) {
-    try {
-      const datosNue = JSON.parse(auditoria.datos_nuevos);
-      html += `
-        <div class="detalle-seccion">
-          <h4>Datos nuevos</h4>
-          <pre>${JSON.stringify(datosNue, null, 2)}</pre>
-        </div>
-      `;
-    } catch (e) {
-      html += `<div class="detalle-seccion"><h4>Datos nuevos</h4><pre>${auditoria.datos_nuevos}</pre></div>`;
+  try {
+    if (auditoria.datos_nuevos) {
+      datosNue = JSON.parse(auditoria.datos_nuevos);
     }
+  } catch (e) {
+    datosNue = null;
   }
 
-  modalBody.innerHTML = html;
-  modal.style.display = "flex";
+  // Identificar el nombre del recurso según la tabla
+  const nombreAnt = datosAnt ? obtenerIdentificador(tabla, datosAnt) : "";
+  const nombreNue = datosNue ? obtenerIdentificador(tabla, datosNue) : "";
+
+  if (accion === "CREAR") {
+    return `${capitalizar(tabla)} creado: <strong>${nombreNue}</strong>`;
+  }
+
+  if (accion === "ELIMINAR") {
+    return `${capitalizar(tabla)} eliminado: <strong>${nombreAnt}</strong>`;
+  }
+
+  if (accion === "EDITAR") {
+    if (!datosAnt || !datosNue) {
+      return `${capitalizar(tabla)} editado: <strong>${nombreNue || nombreAnt}</strong>`;
+    }
+
+    // Detectar cambios campo por campo
+    const cambios = detectarCambios(datosAnt, datosNue);
+
+    if (cambios.length === 0) {
+      return `${capitalizar(tabla)} editado: <strong>${nombreNue}</strong>`;
+    }
+
+    // Formato: "Antes: X · Ahora: Y"
+    const cambiosHtml = cambios
+      .map(
+        (c) =>
+          `<span class="cambio-item">Antes: <em>${c.antes}</em> · Ahora: <strong>${c.ahora}</strong></span>`,
+      )
+      .join("<br>");
+
+    return `${capitalizar(tabla)} editado: <strong>${nombreNue || nombreAnt}</strong><br>${cambiosHtml}`;
+  }
+
+  return auditoria.descripcion || "-";
 }
 
 /**
- * Cierra el modal
+ * Obtiene el identificador principal según la tabla
  */
-function cerrarModal() {
-  document.getElementById("modalDetalle").style.display = "none";
+function obtenerIdentificador(tabla, datos) {
+  switch (tabla) {
+    case "usuario":
+      return `${datos.nombre || ""} ${datos.apellido || ""}`.trim();
+    case "reporte":
+      return datos.titulo || `#${datos.id_reporte}` || "";
+    case "equipo":
+      return datos.nombre || "";
+    case "falla":
+      return datos.titulo || "";
+    case "observacion":
+      return datos.titulo || "";
+    default:
+      return "";
+  }
+}
+
+/**
+ * Detecta los campos que cambiaron entre dos objetos
+ * @returns {Array} Lista de { campo, antes, ahora }
+ */
+function detectarCambios(antes, despues) {
+  const camposIgnorados = [
+    "contrasena",
+    "fecha_creacion",
+    "equipos",
+    "fallas",
+    "cedula_usuario",
+    "id_reporte",
+    "id_equipo",
+    "id_falla",
+    "id_observacion",
+  ];
+
+  const cambios = [];
+
+  Object.keys(despues).forEach((campo) => {
+    if (camposIgnorados.includes(campo)) return;
+    if (!(campo in antes)) return;
+
+    const valorAntes = antes[campo] ?? "";
+    const valorDespues = despues[campo] ?? "";
+
+    // Comparación simple como strings
+    if (String(valorAntes) !== String(valorDespues)) {
+      cambios.push({
+        campo: campo,
+        antes: formatearValor(valorAntes),
+        ahora: formatearValor(valorDespues),
+      });
+    }
+  });
+
+  return cambios;
+}
+
+/**
+ * Formatea un valor para mostrarlo
+ */
+function formatearValor(valor) {
+  if (valor === null || valor === undefined || valor === "") {
+    return "(vacío)";
+  }
+  return String(valor);
+}
+
+/**
+ * Capitaliza la primera letra
+ */
+function capitalizar(texto) {
+  if (!texto) return "";
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 /**
@@ -207,11 +285,3 @@ function mostrarInfoUsuario(usuario) {
     rolUsuario.textContent = usuario.rol;
   }
 }
-
-// Cerrar modal al hacer click fuera
-document.addEventListener("click", function (e) {
-  const modal = document.getElementById("modalDetalle");
-  if (modal && e.target === modal) {
-    cerrarModal();
-  }
-});

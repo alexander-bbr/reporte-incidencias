@@ -342,6 +342,26 @@
   word-wrap: break-word;
 }
 
+/* Estilos para los cambios en auditoría */
+.cambio-item {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-top: 3px;
+  padding-left: 10px;
+  border-left: 2px solid #dee2e6;
+}
+
+.cambio-item em {
+  color: #c82333;
+  font-style: normal;
+  text-decoration: line-through;
+}
+
+.cambio-item strong {
+  color: #155724;
+}
+
 /* Responsive */
 @media (width <= 480px) {
   .page-header {

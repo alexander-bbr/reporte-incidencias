@@ -1,28 +1,5 @@
-CREATE DATABASE IF NOT EXISTS reporte_incidencias;
-USE reporte_incidencias;
-
-/*
-  ### Tablas Principales
-
-    - usuario
-    - reporte
-    - equipo
-    - fallas
-    - observaciones
-  
-  ### Tablas intermedias
-
-    - reporte_falla
-    - reporte_equipo
-
-  ### Relaciones
-
-    - usuario -> reporte (1:N)
-    - usuario -> equipo (1:N)
-    - usuario -> observacion (1:N)
-    - reporte -> equipo (n:m)
-    - reporte -> falla (n:m)
-*/
+CREATE DATABASE IF NOT EXISTS reporte_incidencias_ugita;
+USE reporte_incidencias_ugita;
 
 -- *Tablas Principales
 
@@ -33,6 +10,20 @@ CREATE TABLE usuario (
   apellido VARCHAR(50),
   telefono VARCHAR(15),
   rol enum('COORDINADORA','ADMISIONISTA', 'SISTEMAS')
+);
+
+CREATE TABLE auditoria (
+  id_auditoria INT AUTO_INCREMENT PRIMARY KEY,
+  cedula_usuario VARCHAR(15) NOT NULL,
+  accion ENUM('CREAR', 'EDITAR', 'ELIMINAR') NOT NULL,
+  tabla_afectada VARCHAR(50) NOT NULL,
+  id_registro VARCHAR(50) NULL,
+  descripcion VARCHAR(255) NULL,
+  datos_anteriores TEXT NULL,
+  datos_nuevos TEXT NULL,
+  fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_auditoria_usuario FOREIGN KEY (cedula_usuario) 
+    REFERENCES usuario(cedula_usuario)
 );
 
 CREATE TABLE reporte (
@@ -72,8 +63,6 @@ CREATE TABLE falla (
   titulo VARCHAR (100),
   descripcion TEXT
 );
-
-
 
 -- *Tablas para relaciones
 
